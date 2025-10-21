@@ -1,16 +1,15 @@
 import { Component } from '@angular/core';
 
 @Component({
-  selector: 'page-home',
-  standalone: true,
+  selector: 'page-footer',
   imports: [],
   template: `
     <p>
-      home works!
+      footer works!
     </p>
   `,
-  styleUrl: './home.css'
+  styleUrl: './footer.css'
 })
-export class Home {
+export class Footer {
 
 }

@@ -1,16 +1,15 @@
 import { Component } from '@angular/core';
 
 @Component({
-  selector: 'page-home',
-  standalone: true,
+  selector: 'page-back-to-top',
   imports: [],
   template: `
     <p>
-      home works!
+      back-to-top works!
     </p>
   `,
-  styleUrl: './home.css'
+  styleUrl: './back-to-top.css'
 })
-export class Home {
+export class BackToTop {
 
 }
