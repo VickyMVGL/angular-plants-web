@@ -1,15 +1,31 @@
-import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, signal, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { RouterOutlet, RouterModule } from '@angular/router';
+import { Navbar } from './navbar/navbar';
+import { Footer } from './footer/footer';
 
 @Component({
   selector: 'page-root',
-  imports: [RouterOutlet],
+  standalone: true,
+  imports: [RouterOutlet, RouterModule, Navbar, Footer],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   template: `
-    <h1>Welcome to {{ title() }}!</h1>
+    <div class="app-container">
+      <header>
+        <app-navbar></app-navbar>
+      </header>
 
-    <router-outlet />
+      <main class="app-main">
+        <div class="container">
+          <router-outlet></router-outlet>
+        </div>
+      </main>
+
+      <footer class="app-footer">
+        <app-footer></app-footer>
+      </footer>
+    </div>
   `,
-  styleUrl: './app.css'
+  styleUrls: ['./app.css']
 })
 export class App {
   protected readonly title = signal('angular-plants-web');
