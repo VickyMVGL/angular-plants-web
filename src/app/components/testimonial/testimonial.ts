@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'page-testimonial',
-  imports: [],
+  imports: [CommonModule],
   template: `
     <div class="container-fluid bg-light my-5 p-0 py-5">
   <div class="container p-0 py-5">

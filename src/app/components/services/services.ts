@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'page-services',
-  imports: [],
+  imports: [CommonModule],
   template: `
     <div class="container-fluid bg-light pt-5">
   <div class="container py-5">

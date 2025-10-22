@@ -1,8 +1,10 @@
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'page-blog',
-  imports: [],
+  standalone: true,
+  imports: [CommonModule],
   template: `
     <div class="container pt-5">
       <div class="d-flex flex-column text-center mb-5">
@@ -29,7 +31,7 @@ import { Component } from '@angular/core';
     </div>
 
   `,
-  styleUrl: './blog.css'
+  styleUrls: ['./blog.css']
 })
 export class Blog {
 

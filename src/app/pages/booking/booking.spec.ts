@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { BackToTop } from './back-to-top';
+import { BookingPage } from './booking';
 
-describe('BackToTop', () => {
-  let component: BackToTop;
-  let fixture: ComponentFixture<BackToTop>;
+describe('BookingPage', () => {
+  let component: BookingPage;
+  let fixture: ComponentFixture<BookingPage>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [BackToTop]
+      imports: [BookingPage]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(BackToTop);
+    fixture = TestBed.createComponent(BookingPage);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

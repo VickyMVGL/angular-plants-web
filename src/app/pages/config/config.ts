@@ -1,15 +1,15 @@
 import { Component } from '@angular/core';
 
 @Component({
-  selector: 'page-back-to-top',
+  selector: 'page-config',
   imports: [],
   template: `
     <p>
-      back-to-top works!
+      config works!
     </p>
   `,
-  styleUrl: './back-to-top.css'
+  styleUrl: './config.css'
 })
-export class BackToTop {
+export class ConfigPage {
 
 }

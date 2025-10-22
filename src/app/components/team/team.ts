@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'page-team',
-  imports: [],
+  imports: [CommonModule],
   template: `
     <div class="container mt-5 pt-5 pb-3">
   <div class="d-flex flex-column text-center mb-5">
