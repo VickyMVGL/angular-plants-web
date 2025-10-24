@@ -1,15 +1,15 @@
 import { Component } from '@angular/core';
 
 @Component({
-  selector: 'page-footer',
+  selector: 'page-register',
   imports: [],
   template: `
     <p>
-      footer works!
+      register works!
     </p>
   `,
-  styleUrl: './footer.css'
+  styleUrl: './register.css'
 })
-export class Footer {
+export class Register {
 
 }

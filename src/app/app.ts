@@ -2,6 +2,7 @@ import { Component, signal, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { RouterOutlet, RouterModule } from '@angular/router';
 import { Navbar } from './navbar/navbar';
 import { Footer } from './footer/footer';
+import { Header } from './header/header';
 
 @Component({
   selector: 'page-root',
@@ -11,6 +12,7 @@ import { Footer } from './footer/footer';
   template: `
     <div class="app-container">
       <header>
+        <page-header></page-header>
         <app-navbar></app-navbar>
       </header>
 
@@ -25,7 +27,7 @@ import { Footer } from './footer/footer';
       </footer>
     </div>
   `,
-  styleUrls: ['./app.css']
+  styleUrls: ['../styles.css'],
 })
 export class App {
   protected readonly title = signal('angular-plants-web');
