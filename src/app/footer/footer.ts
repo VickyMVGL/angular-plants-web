@@ -46,7 +46,7 @@ import { Component } from '@angular/core';
         </div>
       </div>
     </div>
-    <div class="container-fluid text-white py-4 px-sm-3 px-md-5" style="background: #111111">
+    <div class="container-fluid text-white py-4 px-sm-3 px-md-5">
       <div class="row">
         <div class="col-md-6 text-center text-md-left mb-3 mb-md-0">
           <p class="m-0 text-white">&copy; <a class="text-white font-weight-bold" href="#">Your Site Name</a>. All Rights Reserved. Designed by <a class="text-white font-weight-bold" href="https://htmlcodex.com">HTML Codex</a></p>
