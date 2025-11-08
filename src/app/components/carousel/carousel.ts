@@ -1,4 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
+
+declare var $: any; // Si estás usando jQuery
 
 @Component({
   selector: 'page-carousel',
@@ -53,4 +55,54 @@ import { Component } from '@angular/core';
   `,
   styleUrl: './carousel.css',
 })
-export class Carousel {}
+export class Carousel implements OnInit, AfterViewInit, OnDestroy {
+  ngOnInit() {
+    // Inicialización básica
+  }
+
+  ngAfterViewInit() {
+    // El DOM está listo, puedes inicializar el carousel aquí
+    this.initializeCarousel();
+  }
+
+  ngOnDestroy() {
+    // Limpieza cuando el componente se destruye
+    this.destroyCarousel();
+  }
+
+  private initializeCarousel() {
+    // Inicializar carousel con JavaScript vanilla
+    const carouselElement = document.getElementById('header-carousel');
+    if (carouselElement) {
+      // Tu lógica de inicialización del carousel aquí
+      console.log('Carousel inicializado');
+
+      // Ejemplo con auto-rotación
+      this.startAutoRotation();
+    }
+  }
+
+  private startAutoRotation() {
+    // Auto-rotación cada 5 segundos
+    setInterval(() => {
+      this.nextSlide();
+    }, 5000);
+  }
+
+  nextSlide() {
+    // Lógica para cambiar al siguiente slide
+    const carousel = document.getElementById('header-carousel');
+    // Implementar lógica de cambio de slide
+  }
+
+  prevSlide() {
+    // Lógica para cambiar al slide anterior
+    const carousel = document.getElementById('header-carousel');
+    // Implementar lógica de cambio de slide
+  }
+
+  private destroyCarousel() {
+    // Limpiar intervalos y event listeners
+    console.log('Carousel destruido');
+  }
+}

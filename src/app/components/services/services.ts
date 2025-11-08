@@ -15,7 +15,7 @@ import { CommonModule } from '@angular/common';
           <!-- 6 cards -->
           <div class="col-md-6 col-lg-4 mb-4" *ngFor="let s of [1, 2, 3, 4, 5, 6]">
             <div class="d-flex flex-column text-center bg-white mb-2 p-3 p-sm-5">
-              <h3 class="display-3 font-weight-normal text-secondary mb-3">Icon</h3>
+              <h3 class="display-3 font-weight-normal text-secondary mb-3">S</h3>
               <h3 class="mb-3">Service {{ s }}</h3>
               <p>Diam amet eos at no eos sit lorem...</p>
               <a class="text-uppercase font-weight-bold" href="#">Read More</a>
