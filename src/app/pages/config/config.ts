@@ -627,7 +627,7 @@ import { CommonModule } from '@angular/common';
                   </div>
                 </div>
               </div>
-              <a class="btn btn-lg btn-primary px-3 d-none d-lg-block">Log In</a>
+              <a class="btn btn-lg btn-secondary px-3 d-none d-lg-block">Log In</a>
             </div>
           </nav>
         </div>
@@ -912,55 +912,45 @@ export class ConfigPage implements AfterViewInit, OnDestroy {
     } catch (e) {
       /* ignore in non-browser contexts */
     }
+
+    // Persist active palette so it survives page reload
+    try {
+      localStorage.setItem('active_palette', JSON.stringify(p));
+    } catch (e) {
+      /* ignore storage errors */
+    }
   }
 
   private applyTypographyToElement(el: HTMLElement | null, t: any) {
-    if (!el) return;
-    const style = el.style;
-    if (t.titleFont) style.setProperty('--title-font', t.titleFont);
-    if (t.textFont) style.setProperty('--text-font', t.textFont);
-
-    if (t.titleSize !== undefined && t.titleSize !== null) {
-      if (typeof t.titleSize === 'number' || /^[0-9]+$/.test(String(t.titleSize)))
-        style.setProperty('--title-size', String(t.titleSize) + 'px');
-      else style.setProperty('--title-size', t.titleSize);
-    }
-    if (t.subtitleSize !== undefined && t.subtitleSize !== null) {
-      if (typeof t.subtitleSize === 'number' || /^[0-9]+$/.test(String(t.subtitleSize)))
-        style.setProperty('--subtitle-size', String(t.subtitleSize) + 'px');
-      else style.setProperty('--subtitle-size', t.subtitleSize);
-    }
-    if (t.textSize !== undefined && t.textSize !== null) {
-      if (typeof t.textSize === 'number' || /^[0-9]+$/.test(String(t.textSize)))
-        style.setProperty('--text-size', String(t.textSize) + 'px');
-      else style.setProperty('--text-size', t.textSize);
-    }
-
-    // Also apply typography to :root so other pages inherit changes
+    if (!el || !t) return;
     try {
-      const rootStyle =
-        (document && document.documentElement && document.documentElement.style) || null;
-      if (rootStyle) {
-        if (t.titleFont) rootStyle.setProperty('--title-font', t.titleFont);
-        if (t.textFont) rootStyle.setProperty('--text-font', t.textFont);
-        if (t.titleSize !== undefined && t.titleSize !== null) {
-          if (typeof t.titleSize === 'number' || /^[0-9]+$/.test(String(t.titleSize)))
-            rootStyle.setProperty('--title-size', String(t.titleSize) + 'px');
-          else rootStyle.setProperty('--title-size', t.titleSize);
-        }
-        if (t.subtitleSize !== undefined && t.subtitleSize !== null) {
-          if (typeof t.subtitleSize === 'number' || /^[0-9]+$/.test(String(t.subtitleSize)))
-            rootStyle.setProperty('--subtitle-size', String(t.subtitleSize) + 'px');
-          else rootStyle.setProperty('--subtitle-size', t.subtitleSize);
-        }
-        if (t.textSize !== undefined && t.textSize !== null) {
-          if (typeof t.textSize === 'number' || /^[0-9]+$/.test(String(t.textSize)))
-            rootStyle.setProperty('--text-size', String(t.textSize) + 'px');
-          else rootStyle.setProperty('--text-size', t.textSize);
-        }
+      const style = el.style;
+      if (t.titleFont) style.setProperty('--title-font', t.titleFont);
+      if (t.textFont) style.setProperty('--text-font', t.textFont);
+      if (t.titleSize !== undefined && t.titleSize !== null) {
+        if (typeof t.titleSize === 'number' || /^[0-9]+$/.test(String(t.titleSize)))
+          style.setProperty('--title-size', String(t.titleSize) + 'px');
+        else style.setProperty('--title-size', t.titleSize);
+      }
+      if (t.subtitleSize !== undefined && t.subtitleSize !== null) {
+        if (typeof t.subtitleSize === 'number' || /^[0-9]+$/.test(String(t.subtitleSize)))
+          style.setProperty('--subtitle-size', String(t.subtitleSize) + 'px');
+        else style.setProperty('--subtitle-size', t.subtitleSize);
+      }
+      if (t.textSize !== undefined && t.textSize !== null) {
+        if (typeof t.textSize === 'number' || /^[0-9]+$/.test(String(t.textSize)))
+          style.setProperty('--text-size', String(t.textSize) + 'px');
+        else style.setProperty('--text-size', t.textSize);
       }
     } catch (e) {
       /* ignore in non-browser contexts */
+    }
+
+    // Also persist active typography
+    try {
+      localStorage.setItem('active_typography', JSON.stringify(t));
+    } catch (e) {
+      /* ignore storage errors */
     }
   }
 
@@ -1797,7 +1787,7 @@ export class ConfigPage implements AfterViewInit, OnDestroy {
 
   /* -------------------------
      Edit panel implementation (creates dynamic form contents)
-     ------------------------- */
+         ------------------------- */
   private openEditPanel(type: string, index: number, onSave: (updated: any) => void) {
     const ui = (this as any)._ui;
     if (!ui) return;
@@ -2076,6 +2066,32 @@ export class ConfigPage implements AfterViewInit, OnDestroy {
     const ui = (this as any)._ui;
     if (!ui) return;
     const { root, previewRoot } = ui as any;
+
+    // Restore persisted active palette / typography (if any)
+    try {
+      if (previewRoot && typeof localStorage !== 'undefined') {
+        const savedPal = localStorage.getItem('active_palette');
+        if (savedPal) {
+          try {
+            const pal = JSON.parse(savedPal);
+            this.applyPaletteToElement(previewRoot, pal);
+          } catch (e) {
+            /* invalid JSON, ignore */
+          }
+        }
+        const savedTypo = localStorage.getItem('active_typography');
+        if (savedTypo) {
+          try {
+            const ty = JSON.parse(savedTypo);
+            this.applyTypographyToElement(previewRoot, ty);
+          } catch (e) {
+            /* invalid JSON, ignore */
+          }
+        }
+      }
+    } catch (e) {
+      /* ignore in non-browser contexts */
+    }
 
     const primaryPicker = root.querySelector('#primary-picker') as HTMLInputElement;
     const secondaryPicker = root.querySelector('#secondary-picker') as HTMLInputElement;

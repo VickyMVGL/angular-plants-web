@@ -52,6 +52,7 @@ body {
   border-color: var(--color-primary) !important;
   color: var(--color-bg) !important;
 }
+
 .navbar {
   background: var(--color-text-1) !important;
 }
@@ -825,7 +826,7 @@ pre code {
 .col-6 {
   color: var(--color-secundary);
 }
-,
+
 .col-7,
 .col-8,
 .col-9,
@@ -2688,7 +2689,7 @@ textarea.form-control.is-invalid {
 }
 
 .btn-secondary {
-  color: var(--color-text-1);
+  color: var(--color-bg);
   background-color: var(--color-secondary);
   border-color: var(--color-secondary);
 }
