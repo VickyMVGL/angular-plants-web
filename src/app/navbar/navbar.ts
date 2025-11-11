@@ -82,7 +82,7 @@ import { RouterModule, Router } from '@angular/router';
             routerLink="/login"
             class="btn btn-lg btn-secondary px-3 d-none d-lg-block"
             (click)="closeMenu()"
-            >Log In</a
+            >Log Out</a
           >
         </div>
       </nav>

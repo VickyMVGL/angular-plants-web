@@ -625,7 +625,7 @@ import { CommonModule } from '@angular/common';
                   </div>
                 </div>
               </div>
-              <a class="btn btn-lg btn-secondary px-3 d-none d-lg-block">Log In</a>
+              <a class="btn btn-lg btn-secondary px-3 d-none d-lg-block">Log Out</a>
             </div>
           </nav>
         </div>

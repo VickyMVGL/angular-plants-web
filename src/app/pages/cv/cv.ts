@@ -28,7 +28,7 @@ import html2canvas from 'html2canvas';
               <div
                 class="card-header bg-primary text-white d-flex justify-content-between align-items-center"
               >
-                <h5 class="mb-0">Mis CVs Guardados</h5>
+                <h5 class="text-bg">Mis CVs Guardados</h5>
                 <div>
                   <button
                     class="btn btn-success btn-sm mr-2"
@@ -37,7 +37,9 @@ import html2canvas from 'html2canvas';
                   >
                     Guardar CV Actual
                   </button>
-                  <button class="btn btn-outline-light btn-sm" (click)="newCV()">Nuevo CV</button>
+                  <button class="btn btn-outline-light text-primary" (click)="newCV()">
+                    Nuevo CV
+                  </button>
                 </div>
               </div>
               <div class="card-body">
@@ -81,7 +83,7 @@ import html2canvas from 'html2canvas';
                           >Actual</span
                         >
                       </h6>
-                      <small class="text-muted">
+                      <small class="text-bg">
                         Creado: {{ formatDisplayDate(cv.createdAt) }} | Modificado:
                         {{ formatDisplayDate(cv.lastModified) }}
                       </small>
@@ -144,12 +146,7 @@ import html2canvas from 'html2canvas';
                     <div class="col-md-6">
                       <div class="form-group">
                         <label>Foto</label>
-                        <input
-                          type="file"
-                          class="form-control"
-                          (change)="onFileSelected($event)"
-                          accept="image/*"
-                        />
+                        <input type="file" (change)="onFileSelected($event)" accept="image/*" />
                         <small class="form-text text-muted">Recomendado: 200x200px</small>
                       </div>
                       <div class="form-group">
@@ -368,7 +365,7 @@ import html2canvas from 'html2canvas';
                     </div>
                     <div class="col-md-4">
                       <div class="form-group">
-                        <label>LinkedIn</label>
+                        <label>Pagina Web</label>
                         <input
                           type="url"
                           class="form-control"
@@ -1031,11 +1028,11 @@ import html2canvas from 'html2canvas';
 
           <!-- Vista previa del CV en tiempo real -->
           <div class="col-md-6">
-            <div class="card sticky-top" style="top: 20px;">
+            <div class="card sticky-top" style="top: 20px; max-height: 1200px; overflow-y: auto;">
               <div
                 class="card-header bg-primary text-white d-flex justify-content-between align-items-center"
               >
-                <h5 class="mb-0">Vista Previa del CV</h5>
+                <h5 class="text-bg">Vista Previa del CV</h5>
                 <div>
                   <span *ngIf="currentCvId" class="badge badge-light mr-2">
                     {{ getCurrentCvName() }}
@@ -1051,17 +1048,32 @@ import html2canvas from 'html2canvas';
                 </div>
               </div>
               <div class="card-body p-0">
-                <div #cvPreview class="cv-preview-standard p-4" style="background: white;">
-                  <!-- Header -->
-                  <div class="cv-header text-center mb-4">
-                    <div class="py-3">
-                      <h1 class="mb-1 main-name">
-                        {{ cvForm.value.firstName || 'Nombre' }}
-                        {{ cvForm.value.lastName || 'Apellido' }}
-                      </h1>
-                      <h3 class="subtitle mb-2">
-                        {{ cvForm.value.desiredPosition || 'Posición deseada' }}
-                      </h3>
+                <div
+                  #cvPreview
+                  class="cv-preview-standard p-4"
+                  style="background: white; min-height: 1100px;"
+                >
+                  <!-- Header con foto a la izquierda -->
+                  <div class="cv-header mb-4">
+                    <div class="d-flex align-items-center">
+                      <!-- Foto a la izquierda -->
+                      <div *ngIf="cvForm.value.photo" class="mr-4">
+                        <img
+                          [src]="cvForm.value.photo"
+                          alt="Foto de perfil"
+                          class="profile-photo"
+                        />
+                      </div>
+                      <!-- Información personal a la derecha -->
+                      <div class="flex-grow-1">
+                        <h1 class="mb-1 main-name">
+                          {{ cvForm.value.firstName || 'Nombre' }}
+                          {{ cvForm.value.lastName || 'Apellido' }}
+                        </h1>
+                        <h3 class="subtitle mb-2">
+                          {{ cvForm.value.desiredPosition || 'Posición deseada' }}
+                        </h3>
+                      </div>
                     </div>
                   </div>
 
@@ -1121,18 +1133,7 @@ import html2canvas from 'html2canvas';
                     </div>
 
                     <!-- Columna derecha (30%) -->
-                    <div class="cv-side-column">
-                      <!-- Foto -->
-                      <div *ngIf="cvForm.value.photo" class="cv-section mb-4">
-                        <div class="text-center">
-                          <img
-                            [src]="cvForm.value.photo"
-                            alt="Foto de perfil"
-                            class="profile-photo"
-                          />
-                        </div>
-                      </div>
-
+                    <div class="cv-side-column" style="margin-left: -15px;">
                       <!-- Información de Contacto -->
                       <div class="cv-section mb-4">
                         <h3 class="side-section-title">Contacto</h3>
@@ -1211,12 +1212,13 @@ import html2canvas from 'html2canvas';
     `
       /* Estilos para el diseño estándar del CV */
       .cv-preview-standard {
-        max-width: 800px;
+        max-width: 900px;
         margin: 0 auto;
         padding: 2rem;
         font-family: 'Arial', 'Helvetica', sans-serif;
         background: white;
         color: #333;
+        min-height: 1100px;
       }
 
       .cv-container {
@@ -1235,13 +1237,15 @@ import html2canvas from 'html2canvas';
       .cv-header {
         border-bottom: 3px solid var(--main-color, #2c3e50);
         margin-bottom: 2rem;
+        padding-bottom: 1rem;
       }
 
       .main-name {
-        font-size: 2.5rem;
+        font-size: 2.2rem;
         font-weight: bold;
         color: var(--main-color, #2c3e50);
         margin: 0;
+        line-height: 1.1;
       }
 
       .subtitle {
@@ -1252,7 +1256,7 @@ import html2canvas from 'html2canvas';
       }
 
       .section-title {
-        font-size: 1.4rem;
+        font-size: 1.3rem;
         font-weight: bold;
         color: var(--main-color, #2c3e50);
         border-bottom: 2px solid var(--main-color, #2c3e50);
@@ -1354,6 +1358,15 @@ import html2canvas from 'html2canvas';
         .cv-main-column,
         .cv-side-column {
           flex: 0 0 100%;
+        }
+
+        .cv-header {
+          flex-direction: column;
+          text-align: center;
+        }
+
+        .profile-photo {
+          margin: 0 auto 1rem auto;
         }
       }
 
@@ -1478,6 +1491,7 @@ import html2canvas from 'html2canvas';
   ],
 })
 export class CvComponent implements OnInit, OnDestroy {
+  // ... (el resto del código de la clase se mantiene exactamente igual)
   @ViewChild('cvPreview') cvPreview!: ElementRef;
   @ViewChild('cvNameInput') cvNameInput!: ElementRef;
 
