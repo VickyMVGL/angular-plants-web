@@ -3,112 +3,72 @@ import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
-import { User } from '../models/user.model';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
   imports: [CommonModule, RouterModule],
   template: `
-    <div class="container-fluid p-0">
-      <nav class="navbar navbar-expand-lg bg-dark navbar-dark py-3 py-lg-0 px-lg-5">
-        <a routerLink="/" class="navbar-brand d-block d-lg-none" (click)="closeMenu()">
-          <h1 class="m-0 display-5 text-capitalize font-italic text-white">
-            <span class="text-primary">Safety</span>First
-          </h1>
-        </a>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark p-3">
+      <a routerLink="/" class="navbar-brand">Mi App</a>
 
-        <button class="navbar-toggler" type="button" (click)="toggleMenu()" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
+      <button class="navbar-toggler" type="button" (click)="toggleMenu()">
+        <span class="navbar-toggler-icon"></span>
+      </button>
 
-        <div class="collapse navbar-collapse" [class.show]="menuOpen()">
-          <div class="navbar-nav mr-auto py-0">
-            <a routerLink="/" routerLinkActive="active" class="nav-item nav-link" (click)="onNavClick()">Home</a>
-            <a routerLink="/about" routerLinkActive="active" class="nav-item nav-link" (click)="onNavClick()">About</a>
-            <a routerLink="/services" routerLinkActive="active" class="nav-item nav-link" (click)="onNavClick()">Service</a>
-            <a routerLink="/price" routerLinkActive="active" class="nav-item nav-link" (click)="onNavClick()">Price</a>
-            <a routerLink="/booking" routerLinkActive="active" class="nav-item nav-link" (click)="onNavClick()">Booking</a>
-          </div>
+      <div class="collapse navbar-collapse" [class.show]="menuOpen()">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a routerLink="/" class="nav-link" (click)="closeMenu()">Home</a></li>
+          <li class="nav-item"><a routerLink="/about" class="nav-link" (click)="closeMenu()">About</a></li>
+          <li class="nav-item"><a routerLink="/services" class="nav-link" (click)="closeMenu()">Service</a></li>
+        </ul>
 
-          <!-- Login / Usuario -->
-          <div class="d-none d-lg-block">
-            <!-- Botón Log In si no hay usuario -->
-            <button *ngIf="!userSignal()" class="btn btn-lg btn-secondary px-3" (click)="goLogin()">
-              Log In
+        <div class="d-flex">
+          <!-- Si no hay usuario -->
+          <button *ngIf="!auth.currentUser()" class="btn btn-secondary me-2" (click)="goLogin()">
+            Log In
+          </button>
+
+          <!-- Si hay usuario -->
+          <div *ngIf="auth.currentUser()" class="btn-group">
+            <button class="btn btn-success dropdown-toggle" type="button" (click)="toggleDropdown($event)">
+              {{ auth.currentUser()?.username }}
             </button>
-
-            <!-- Usuario logueado -->
-            <div *ngIf="userSignal()" class="btn-group">
-              <button class="btn btn-lg btn-success dropdown-toggle" type="button" (click)="toggleDropdown($event)">
-                {{ userSignal()?.name }}
-              </button>
-
-              <ul class="dropdown-menu dropdown-menu-end" [class.show]="dropdownOpen()">
-                <!-- Opciones admin -->
-                <li *ngIf="userSignal()?.role === 'admin'">
-                  <a class="dropdown-item" routerLink="/ver-cv" (click)="closeMenu()">Ver CV</a>
-                </li>
-                <li *ngIf="userSignal()?.role === 'admin'">
-                  <a class="dropdown-item" routerLink="/paleta-colores" (click)="closeMenu()">Paleta de colores</a>
-                </li>
-
-                <!-- Opciones user -->
-                <li *ngIf="userSignal()?.role === 'user'">
-                  <a class="dropdown-item" routerLink="/crear-cv" (click)="closeMenu()">Crear CV</a>
-                </li>
-
-                <li><hr class="dropdown-divider"></li>
-                <li>
-                  <button class="dropdown-item" (click)="logout()">Cerrar sesión</button>
-                </li>
-              </ul>
-            </div>
+            <ul class="dropdown-menu dropdown-menu-end" [class.show]="dropdownOpen()">
+              <li *ngIf="auth.isAdmin()">
+                <a class="dropdown-item" routerLink="/ver-cv" (click)="closeMenu()">Ver CV</a>
+              </li>
+              <li *ngIf="auth.isAdmin()">
+                <a class="dropdown-item" routerLink="/paleta-colores" (click)="closeMenu()">Paleta de colores</a>
+              </li>
+              <li *ngIf="!auth.isAdmin()">
+                <a class="dropdown-item" routerLink="/crear-cv" (click)="closeMenu()">Crear CV</a>
+              </li>
+              <li><hr class="dropdown-divider"></li>
+              <li>
+                <button class="dropdown-item" (click)="logout()">Cerrar sesión</button>
+              </li>
+            </ul>
           </div>
         </div>
-      </nav>
-    </div>
+      </div>
+    </nav>
   `,
-  styles: [
-    `
-      :host { display: block; }
-      .navbar-nav .nav-link.active {
-        color: #fff;
-        background: rgba(255, 255, 255, 0.06);
-        border-radius: 4px;
-      }
-      .dropdown-menu { position: absolute; }
-      @media (max-width: 991px) {
-        .dropdown-menu { position: static; }
-      }
-    `,
-  ],
 })
 export class Navbar {
   menuOpen = signal(false);
   dropdownOpen = signal(false);
-  userSignal = signal<User | null>(null);
 
-  constructor(private auth: AuthService, private router: Router) {
-    // Suscribirse al user$ y actualizar el signal
-    this.auth.user$.subscribe(user => {
-      console.log('Navbar: usuario actualizado', user);
-      this.userSignal.set(user);
-    });
+  constructor(public auth: AuthService, private router: Router) {}
+
+  toggleMenu() {
+    this.menuOpen.set(!this.menuOpen());
+    if (!this.menuOpen()) this.dropdownOpen.set(false);
   }
 
-  toggleMenu() { 
-    this.menuOpen.set(!this.menuOpen()); 
-    if (!this.menuOpen()) this.dropdownOpen.set(false); 
-  }
-
-  closeMenu() { 
-    this.menuOpen.set(false); 
-    this.dropdownOpen.set(false); 
-  }
-
-  onNavClick() { 
-    this.closeMenu(); 
+  closeMenu() {
+    this.menuOpen.set(false);
+    this.dropdownOpen.set(false);
   }
 
   toggleDropdown(event: Event) {

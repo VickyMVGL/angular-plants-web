@@ -1,70 +1,72 @@
 import { Routes } from '@angular/router';
-import { AuthGuard } from './guards/auth.guard';
+import { authGuard } from './guards/auth.guard';
 import { AdminGuard } from './guards/admin.guard';
 
 export const routes: Routes = [
-  // Página de login (pública)
-  {
-    path: 'login',
-    loadComponent: () =>
-      import('./pages/login/login').then((m) => m.Login),
-  },
-
-  // Página principal (solo usuarios logueados)
+  // Página principal (pública, accesible sin login)
   {
     path: 'home',
     loadComponent: () =>
       import('./pages/home/home').then((m) => m.Home),
-    canActivate: [AuthGuard],
   },
+
+  // Página de login (pública)
+  {
+    path: 'login',
+    loadComponent: () =>
+      import('./pages/login/login').then((m) => m.LoginComponent),
+  },
+
   // Páginas protegidas (solo si está logueado)
   {
     path: 'about',
     loadComponent: () =>
       import('./pages/about/about').then((m) => m.AboutPage),
-    canActivate: [AuthGuard],
+    canActivate: [authGuard],
   },
   {
     path: 'services',
     loadComponent: () =>
       import('./pages/services/services').then((m) => m.ServicesPage),
-    canActivate: [AuthGuard],
+    canActivate: [authGuard],
   },
   {
     path: 'price',
     loadComponent: () =>
       import('./pages/price/price').then((m) => m.PricePage),
-    canActivate: [AuthGuard],
+    canActivate: [authGuard],
   },
   {
     path: 'booking',
     loadComponent: () =>
       import('./pages/booking/booking').then((m) => m.BookingPage),
-    canActivate: [AuthGuard],
+    canActivate: [authGuard],
   },
+
+  // PÁGINAS DE ADMIN (solo administradores)
   {
     path: 'config',
     loadComponent: () =>
       import('./pages/config/config').then((m) => m.ConfigPage),
-    canActivate: [AuthGuard, AdminGuard], // Solo admins
+    canActivate: [authGuard, AdminGuard],
   },
 
-  // Página de CV (para usuarios normales)
+  // Página de CV existente (mantener por compatibilidad)
   {
     path: 'cv',
     loadComponent: () =>
       import('./pages/cv/cv').then((m) => m.CvComponent),
-    canActivate: [AuthGuard],
+    canActivate: [authGuard],
   },
 
   // Redirecciones
   {
     path: '',
-    redirectTo: 'login',
+    redirectTo: 'home',
     pathMatch: 'full',
   },
   {
     path: '**',
-    redirectTo: 'login',
+    redirectTo: 'home',
   },
 ];
