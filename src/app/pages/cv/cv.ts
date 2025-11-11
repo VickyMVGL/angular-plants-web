@@ -25,19 +25,19 @@ import html2canvas from 'html2canvas';
         <div class="row mb-4">
           <div class="col-md-12">
             <div class="card">
-              <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+              <div
+                class="card-header bg-primary text-white d-flex justify-content-between align-items-center"
+              >
                 <h5 class="mb-0">Mis CVs Guardados</h5>
                 <div>
-                  <button 
-                    class="btn btn-success btn-sm mr-2" 
+                  <button
+                    class="btn btn-success btn-sm mr-2"
                     (click)="saveCV()"
                     [disabled]="!cvForm.valid"
                   >
-                    💾 Guardar CV Actual
+                    Guardar CV Actual
                   </button>
-                  <button class="btn btn-outline-light btn-sm" (click)="newCV()">
-                    ➕ Nuevo CV
-                  </button>
+                  <button class="btn btn-outline-light btn-sm" (click)="newCV()">Nuevo CV</button>
                 </div>
               </div>
               <div class="card-body">
@@ -45,9 +45,9 @@ import html2canvas from 'html2canvas';
                 <div *ngIf="showSaveInput" class="mb-3">
                   <div class="row">
                     <div class="col-md-8">
-                      <input 
-                        type="text" 
-                        class="form-control" 
+                      <input
+                        type="text"
+                        class="form-control"
                         placeholder="Nombre para este CV (ej: CV Ingeniero Software)"
                         [(ngModel)]="newCvName"
                         #cvNameInput
@@ -55,40 +55,43 @@ import html2canvas from 'html2canvas';
                     </div>
                     <div class="col-md-4">
                       <button class="btn btn-primary mr-2" (click)="confirmSave()">
-                        ✅ Confirmar
+                        Confirmar
                       </button>
-                      <button class="btn btn-secondary" (click)="cancelSave()">
-                        ❌ Cancelar
-                      </button>
+                      <button class="btn btn-secondary" (click)="cancelSave()">Cancelar</button>
                     </div>
                   </div>
                 </div>
 
                 <div *ngIf="cvList.length === 0" class="text-center text-muted py-3">
-                  📄
-                  <p>No hay CVs guardados. Completa el formulario y haz clic en "Guardar CV Actual".</p>
+                  <p>
+                    No hay CVs guardados. Completa el formulario y haz clic en "Guardar CV Actual".
+                  </p>
                 </div>
-                
+
                 <div class="list-group" *ngIf="cvList.length > 0">
-                  <div *ngFor="let cv of cvList" 
-                       class="list-group-item d-flex justify-content-between align-items-center"
-                       [class.active]="currentCvId === cv.id">
+                  <div
+                    *ngFor="let cv of cvList"
+                    class="list-group-item d-flex justify-content-between align-items-center"
+                    [class.active]="currentCvId === cv.id"
+                  >
                     <div class="flex-grow-1">
                       <h6 class="mb-1">
-                        📄 {{ cv.name }}
-                        <span *ngIf="currentCvId === cv.id" class="badge badge-primary ml-2">Actual</span>
+                        {{ cv.name }}
+                        <span *ngIf="currentCvId === cv.id" class="badge badge-primary ml-2"
+                          >Actual</span
+                        >
                       </h6>
                       <small class="text-muted">
-                        Creado: {{ formatDisplayDate(cv.createdAt) }} | 
-                        Modificado: {{ formatDisplayDate(cv.lastModified) }}
+                        Creado: {{ formatDisplayDate(cv.createdAt) }} | Modificado:
+                        {{ formatDisplayDate(cv.lastModified) }}
                       </small>
                     </div>
                     <div class="btn-group">
                       <button class="btn btn-outline-primary btn-sm mr-1" (click)="loadCV(cv.id)">
-                        ✏️ Cargar
+                        Cargar
                       </button>
                       <button class="btn btn-outline-danger btn-sm" (click)="deleteCV(cv.id)">
-                        🗑️
+                        Eliminar
                       </button>
                     </div>
                   </div>
@@ -131,7 +134,6 @@ import html2canvas from 'html2canvas';
           <!-- Formulario -->
           <div class="col-md-6">
             <form [formGroup]="cvForm">
-              
               <!-- Detalles Personales -->
               <div class="card mb-4">
                 <div class="card-header bg-primary text-white">
@@ -152,27 +154,37 @@ import html2canvas from 'html2canvas';
                       </div>
                       <div class="form-group">
                         <label>Nombre *</label>
-                        <input 
-                          type="text" 
-                          class="form-control" 
-                          formControlName="firstName" 
-                          [class.is-invalid]="cvForm.get('firstName')?.invalid && cvForm.get('firstName')?.touched"
-                          required 
+                        <input
+                          type="text"
+                          class="form-control"
+                          formControlName="firstName"
+                          [class.is-invalid]="
+                            cvForm.get('firstName')?.invalid && cvForm.get('firstName')?.touched
+                          "
+                          required
                         />
-                        <div class="invalid-feedback" *ngIf="cvForm.get('firstName')?.errors?.['required']">
+                        <div
+                          class="invalid-feedback"
+                          *ngIf="cvForm.get('firstName')?.errors?.['required']"
+                        >
                           El nombre es obligatorio
                         </div>
                       </div>
                       <div class="form-group">
                         <label>Apellido *</label>
-                        <input 
-                          type="text" 
-                          class="form-control" 
-                          formControlName="lastName" 
-                          [class.is-invalid]="cvForm.get('lastName')?.invalid && cvForm.get('lastName')?.touched"
-                          required 
+                        <input
+                          type="text"
+                          class="form-control"
+                          formControlName="lastName"
+                          [class.is-invalid]="
+                            cvForm.get('lastName')?.invalid && cvForm.get('lastName')?.touched
+                          "
+                          required
                         />
-                        <div class="invalid-feedback" *ngIf="cvForm.get('lastName')?.errors?.['required']">
+                        <div
+                          class="invalid-feedback"
+                          *ngIf="cvForm.get('lastName')?.errors?.['required']"
+                        >
                           El apellido es obligatorio
                         </div>
                       </div>
@@ -182,10 +194,16 @@ import html2canvas from 'html2canvas';
                           type="text"
                           class="form-control"
                           formControlName="desiredPosition"
-                          [class.is-invalid]="cvForm.get('desiredPosition')?.invalid && cvForm.get('desiredPosition')?.touched"
+                          [class.is-invalid]="
+                            cvForm.get('desiredPosition')?.invalid &&
+                            cvForm.get('desiredPosition')?.touched
+                          "
                           required
                         />
-                        <div class="invalid-feedback" *ngIf="cvForm.get('desiredPosition')?.errors?.['required']">
+                        <div
+                          class="invalid-feedback"
+                          *ngIf="cvForm.get('desiredPosition')?.errors?.['required']"
+                        >
                           La posición deseada es obligatoria
                         </div>
                       </div>
@@ -193,78 +211,115 @@ import html2canvas from 'html2canvas';
                     <div class="col-md-6">
                       <div class="form-group">
                         <label>Email *</label>
-                        <input 
-                          type="email" 
-                          class="form-control" 
-                          formControlName="email" 
-                          [class.is-invalid]="cvForm.get('email')?.invalid && cvForm.get('email')?.touched"
-                          required 
+                        <input
+                          type="email"
+                          class="form-control"
+                          formControlName="email"
+                          [class.is-invalid]="
+                            cvForm.get('email')?.invalid && cvForm.get('email')?.touched
+                          "
+                          required
                         />
-                        <div class="invalid-feedback" *ngIf="cvForm.get('email')?.errors?.['required']">
+                        <div
+                          class="invalid-feedback"
+                          *ngIf="cvForm.get('email')?.errors?.['required']"
+                        >
                           El email es obligatorio
                         </div>
-                        <div class="invalid-feedback" *ngIf="cvForm.get('email')?.errors?.['email']">
+                        <div
+                          class="invalid-feedback"
+                          *ngIf="cvForm.get('email')?.errors?.['email']"
+                        >
                           Formato de email inválido
                         </div>
                       </div>
                       <div class="form-group">
                         <label>Teléfono *</label>
-                        <input 
-                          type="tel" 
-                          class="form-control" 
-                          formControlName="phone" 
-                          [class.is-invalid]="cvForm.get('phone')?.invalid && cvForm.get('phone')?.touched"
-                          required 
+                        <input
+                          type="tel"
+                          class="form-control"
+                          formControlName="phone"
+                          [class.is-invalid]="
+                            cvForm.get('phone')?.invalid && cvForm.get('phone')?.touched
+                          "
+                          required
                         />
-                        <div class="invalid-feedback" *ngIf="cvForm.get('phone')?.errors?.['required']">
+                        <div
+                          class="invalid-feedback"
+                          *ngIf="cvForm.get('phone')?.errors?.['required']"
+                        >
                           El teléfono es obligatorio
                         </div>
-                        <div class="invalid-feedback" *ngIf="cvForm.get('phone')?.errors?.['pattern']">
+                        <div
+                          class="invalid-feedback"
+                          *ngIf="cvForm.get('phone')?.errors?.['pattern']"
+                        >
                           Solo se permiten números, espacios, +, - y ()
                         </div>
                       </div>
                       <div class="form-group">
                         <label>Dirección *</label>
-                        <input 
-                          type="text" 
-                          class="form-control" 
-                          formControlName="address" 
-                          [class.is-invalid]="cvForm.get('address')?.invalid && cvForm.get('address')?.touched"
-                          required 
+                        <input
+                          type="text"
+                          class="form-control"
+                          formControlName="address"
+                          [class.is-invalid]="
+                            cvForm.get('address')?.invalid && cvForm.get('address')?.touched
+                          "
+                          required
                         />
-                        <div class="invalid-feedback" *ngIf="cvForm.get('address')?.errors?.['required']">
+                        <div
+                          class="invalid-feedback"
+                          *ngIf="cvForm.get('address')?.errors?.['required']"
+                        >
                           La dirección es obligatoria
                         </div>
                       </div>
                       <div class="form-group">
                         <label>Código Postal *</label>
-                        <input 
-                          type="text" 
-                          class="form-control" 
-                          formControlName="postalCode" 
-                          [class.is-invalid]="cvForm.get('postalCode')?.invalid && cvForm.get('postalCode')?.touched"
-                          required 
+                        <input
+                          type="text"
+                          class="form-control"
+                          formControlName="postalCode"
+                          [class.is-invalid]="
+                            cvForm.get('postalCode')?.invalid && cvForm.get('postalCode')?.touched
+                          "
+                          required
                         />
-                        <div class="invalid-feedback" *ngIf="cvForm.get('postalCode')?.errors?.['required']">
+                        <div
+                          class="invalid-feedback"
+                          *ngIf="cvForm.get('postalCode')?.errors?.['required']"
+                        >
                           El código postal es obligatorio
                         </div>
-                        <div class="invalid-feedback" *ngIf="cvForm.get('postalCode')?.errors?.['pattern']">
+                        <div
+                          class="invalid-feedback"
+                          *ngIf="cvForm.get('postalCode')?.errors?.['pattern']"
+                        >
                           Solo se permiten números y letras
                         </div>
                       </div>
                       <div class="form-group">
                         <label>Ciudad *</label>
-                        <input 
-                          type="text" 
-                          class="form-control" 
-                          formControlName="city" 
-                          [class.is-invalid]="cvForm.get('city')?.invalid && cvForm.get('city')?.touched"
-                          required 
+                        <input
+                          type="text"
+                          class="form-control"
+                          formControlName="city"
+                          [class.is-invalid]="
+                            cvForm.get('city')?.invalid && cvForm.get('city')?.touched
+                          "
+                          required
                         />
-                        <div class="invalid-feedback" *ngIf="cvForm.get('city')?.errors?.['required']">
+                        <div
+                          class="invalid-feedback"
+                          *ngIf="cvForm.get('city')?.errors?.['required']"
+                        >
                           La ciudad es obligatoria
                         </div>
-                        <div class="invalid-feedback" *ngIf="cvForm.get('city')?.errors?.['pattern']">
+                        <div
+                          class="invalid-feedback"
+                          *ngIf="cvForm.get('city')?.errors?.['pattern']"
+                        >
                           Solo se permiten letras y espacios
                         </div>
                       </div>
@@ -276,13 +331,18 @@ import html2canvas from 'html2canvas';
                     <div class="col-md-4">
                       <div class="form-group">
                         <label>Fecha de Nacimiento</label>
-                        <input 
-                          type="date" 
-                          class="form-control" 
-                          formControlName="birthDate" 
-                          [class.is-invalid]="cvForm.get('birthDate')?.invalid && cvForm.get('birthDate')?.touched"
+                        <input
+                          type="date"
+                          class="form-control"
+                          formControlName="birthDate"
+                          [class.is-invalid]="
+                            cvForm.get('birthDate')?.invalid && cvForm.get('birthDate')?.touched
+                          "
                         />
-                        <div class="invalid-feedback" *ngIf="cvForm.get('birthDate')?.errors?.['futureDate']">
+                        <div
+                          class="invalid-feedback"
+                          *ngIf="cvForm.get('birthDate')?.errors?.['futureDate']"
+                        >
                           La fecha de nacimiento no puede ser futura
                         </div>
                       </div>
@@ -290,13 +350,18 @@ import html2canvas from 'html2canvas';
                     <div class="col-md-4">
                       <div class="form-group">
                         <label>Lugar de Nacimiento</label>
-                        <input 
-                          type="text" 
-                          class="form-control" 
-                          formControlName="birthPlace" 
-                          [class.is-invalid]="cvForm.get('birthPlace')?.invalid && cvForm.get('birthPlace')?.touched"
+                        <input
+                          type="text"
+                          class="form-control"
+                          formControlName="birthPlace"
+                          [class.is-invalid]="
+                            cvForm.get('birthPlace')?.invalid && cvForm.get('birthPlace')?.touched
+                          "
                         />
-                        <div class="invalid-feedback" *ngIf="cvForm.get('birthPlace')?.errors?.['pattern']">
+                        <div
+                          class="invalid-feedback"
+                          *ngIf="cvForm.get('birthPlace')?.errors?.['pattern']"
+                        >
                           Solo se permiten letras y espacios
                         </div>
                       </div>
@@ -304,13 +369,18 @@ import html2canvas from 'html2canvas';
                     <div class="col-md-4">
                       <div class="form-group">
                         <label>LinkedIn</label>
-                        <input 
-                          type="url" 
-                          class="form-control" 
-                          formControlName="linkedin" 
-                          [class.is-invalid]="cvForm.get('linkedin')?.invalid && cvForm.get('linkedin')?.touched"
+                        <input
+                          type="url"
+                          class="form-control"
+                          formControlName="linkedin"
+                          [class.is-invalid]="
+                            cvForm.get('linkedin')?.invalid && cvForm.get('linkedin')?.touched
+                          "
                         />
-                        <div class="invalid-feedback" *ngIf="cvForm.get('linkedin')?.errors?.['pattern']">
+                        <div
+                          class="invalid-feedback"
+                          *ngIf="cvForm.get('linkedin')?.errors?.['pattern']"
+                        >
                           Formato de URL inválido
                         </div>
                       </div>
@@ -381,7 +451,6 @@ import html2canvas from 'html2canvas';
                       class="editor-content form-control"
                       contenteditable="true"
                       data-editor="profile"
-                      dir="ltr"
                       (input)="onEditorInput('profile', $event)"
                       [innerHTML]="cvForm.get('profile')?.value || ''"
                       style="min-height:90px;"
@@ -396,12 +465,8 @@ import html2canvas from 'html2canvas';
                   class="card-header bg-primary text-white d-flex justify-content-between align-items-center"
                 >
                   <h5 class="text-bg">Educación</h5>
-                  <button
-                    type="button"
-                    class="btn btn-secondary btn-sm"
-                    (click)="addEducation()"
-                  >
-                    ➕ Agregar Educación
+                  <button type="button" class="btn btn-secondary btn-sm" (click)="addEducation()">
+                    Agregar Educación
                   </button>
                 </div>
                 <div class="card-body" formArrayName="education">
@@ -414,30 +479,45 @@ import html2canvas from 'html2canvas';
                       <div class="col-md-6">
                         <div class="form-group">
                           <label>Escuela *</label>
-                          <input 
-                            type="text" 
-                            class="form-control" 
-                            formControlName="school" 
-                            [class.is-invalid]="educationControls[i].get('school')?.invalid && educationControls[i].get('school')?.touched"
-                            required 
+                          <input
+                            type="text"
+                            class="form-control"
+                            formControlName="school"
+                            [class.is-invalid]="
+                              educationControls[i].get('school')?.invalid &&
+                              educationControls[i].get('school')?.touched
+                            "
+                            required
                           />
-                          <div class="invalid-feedback" *ngIf="educationControls[i].get('school')?.errors?.['required']">
+                          <div
+                            class="invalid-feedback"
+                            *ngIf="educationControls[i].get('school')?.errors?.['required']"
+                          >
                             La escuela es obligatoria
                           </div>
                         </div>
                         <div class="form-group">
                           <label>Ciudad *</label>
-                          <input 
-                            type="text" 
-                            class="form-control" 
-                            formControlName="city" 
-                            [class.is-invalid]="educationControls[i].get('city')?.invalid && educationControls[i].get('city')?.touched"
-                            required 
+                          <input
+                            type="text"
+                            class="form-control"
+                            formControlName="city"
+                            [class.is-invalid]="
+                              educationControls[i].get('city')?.invalid &&
+                              educationControls[i].get('city')?.touched
+                            "
+                            required
                           />
-                          <div class="invalid-feedback" *ngIf="educationControls[i].get('city')?.errors?.['required']">
+                          <div
+                            class="invalid-feedback"
+                            *ngIf="educationControls[i].get('city')?.errors?.['required']"
+                          >
                             La ciudad es obligatoria
                           </div>
-                          <div class="invalid-feedback" *ngIf="educationControls[i].get('city')?.errors?.['pattern']">
+                          <div
+                            class="invalid-feedback"
+                            *ngIf="educationControls[i].get('city')?.errors?.['pattern']"
+                          >
                             Solo se permiten letras y espacios
                           </div>
                         </div>
@@ -449,26 +529,43 @@ import html2canvas from 'html2canvas';
                             type="date"
                             class="form-control"
                             formControlName="startDate"
-                            [class.is-invalid]="educationControls[i].get('startDate')?.invalid && educationControls[i].get('startDate')?.touched"
+                            [class.is-invalid]="
+                              educationControls[i].get('startDate')?.invalid &&
+                              educationControls[i].get('startDate')?.touched
+                            "
                             required
                           />
-                          <div class="invalid-feedback" *ngIf="educationControls[i].get('startDate')?.errors?.['required']">
+                          <div
+                            class="invalid-feedback"
+                            *ngIf="educationControls[i].get('startDate')?.errors?.['required']"
+                          >
                             La fecha de inicio es obligatoria
                           </div>
                         </div>
                         <div class="form-group">
                           <label>Fecha de Fin</label>
-                          <input 
-                            type="date" 
-                            class="form-control" 
-                            formControlName="endDate" 
-                            [class.is-invalid]="educationControls[i].get('endDate')?.invalid && educationControls[i].get('endDate')?.touched"
+                          <input
+                            type="date"
+                            class="form-control"
+                            formControlName="endDate"
+                            [class.is-invalid]="
+                              educationControls[i].get('endDate')?.invalid &&
+                              educationControls[i].get('endDate')?.touched
+                            "
                           />
-                          <div class="invalid-feedback" *ngIf="educationControls[i].get('endDate')?.errors?.['dateOrder']">
+                          <div
+                            class="invalid-feedback"
+                            *ngIf="educationControls[i].get('endDate')?.errors?.['dateOrder']"
+                          >
                             La fecha de fin no puede ser anterior a la fecha de inicio
                           </div>
                           <div class="form-check mt-2">
-                            <input type="checkbox" class="form-check-input" formControlName="current" (change)="onCurrentEducationChange(i)" />
+                            <input
+                              type="checkbox"
+                              class="form-check-input"
+                              formControlName="current"
+                              (change)="onCurrentEducationChange(i)"
+                            />
                             <label class="form-check-label">Actualmente estudiando</label>
                           </div>
                         </div>
@@ -517,7 +614,6 @@ import html2canvas from 'html2canvas';
                         class="editor-content form-control"
                         contenteditable="true"
                         [attr.data-editor]="'education-' + i"
-                        dir="ltr"
                         (input)="onEditorInputArray('education', i, $event)"
                         [innerHTML]="educationControls[i].get('description')?.value || ''"
                         style="min-height:60px;"
@@ -528,7 +624,7 @@ import html2canvas from 'html2canvas';
                       class="btn btn-danger btn-sm"
                       (click)="removeEducation(i)"
                     >
-                      🗑️ Eliminar
+                      Eliminar
                     </button>
                   </div>
                 </div>
@@ -540,12 +636,8 @@ import html2canvas from 'html2canvas';
                   class="card-header bg-primary text-white d-flex justify-content-between align-items-center"
                 >
                   <h5 class="text-bg">Experiencia Laboral</h5>
-                  <button
-                    type="button"
-                    class="btn btn-secondary btn-sm"
-                    (click)="addExperience()"
-                  >
-                    ➕ Agregar Experiencia
+                  <button type="button" class="btn btn-secondary btn-sm" (click)="addExperience()">
+                    Agregar Experiencia
                   </button>
                 </div>
                 <div class="card-body" formArrayName="experience">
@@ -558,27 +650,39 @@ import html2canvas from 'html2canvas';
                       <div class="col-md-6">
                         <div class="form-group">
                           <label>Posición *</label>
-                          <input 
-                            type="text" 
-                            class="form-control" 
-                            formControlName="position" 
-                            [class.is-invalid]="experienceControls[i].get('position')?.invalid && experienceControls[i].get('position')?.touched"
-                            required 
+                          <input
+                            type="text"
+                            class="form-control"
+                            formControlName="position"
+                            [class.is-invalid]="
+                              experienceControls[i].get('position')?.invalid &&
+                              experienceControls[i].get('position')?.touched
+                            "
+                            required
                           />
-                          <div class="invalid-feedback" *ngIf="experienceControls[i].get('position')?.errors?.['required']">
+                          <div
+                            class="invalid-feedback"
+                            *ngIf="experienceControls[i].get('position')?.errors?.['required']"
+                          >
                             La posición es obligatoria
                           </div>
                         </div>
                         <div class="form-group">
                           <label>Empleador *</label>
-                          <input 
-                            type="text" 
-                            class="form-control" 
-                            formControlName="employer" 
-                            [class.is-invalid]="experienceControls[i].get('employer')?.invalid && experienceControls[i].get('employer')?.touched"
-                            required 
+                          <input
+                            type="text"
+                            class="form-control"
+                            formControlName="employer"
+                            [class.is-invalid]="
+                              experienceControls[i].get('employer')?.invalid &&
+                              experienceControls[i].get('employer')?.touched
+                            "
+                            required
                           />
-                          <div class="invalid-feedback" *ngIf="experienceControls[i].get('employer')?.errors?.['required']">
+                          <div
+                            class="invalid-feedback"
+                            *ngIf="experienceControls[i].get('employer')?.errors?.['required']"
+                          >
                             El empleador es obligatorio
                           </div>
                         </div>
@@ -586,17 +690,26 @@ import html2canvas from 'html2canvas';
                       <div class="col-md-6">
                         <div class="form-group">
                           <label>Ciudad *</label>
-                          <input 
-                            type="text" 
-                            class="form-control" 
-                            formControlName="city" 
-                            [class.is-invalid]="experienceControls[i].get('city')?.invalid && experienceControls[i].get('city')?.touched"
-                            required 
+                          <input
+                            type="text"
+                            class="form-control"
+                            formControlName="city"
+                            [class.is-invalid]="
+                              experienceControls[i].get('city')?.invalid &&
+                              experienceControls[i].get('city')?.touched
+                            "
+                            required
                           />
-                          <div class="invalid-feedback" *ngIf="experienceControls[i].get('city')?.errors?.['required']">
+                          <div
+                            class="invalid-feedback"
+                            *ngIf="experienceControls[i].get('city')?.errors?.['required']"
+                          >
                             La ciudad es obligatoria
                           </div>
-                          <div class="invalid-feedback" *ngIf="experienceControls[i].get('city')?.errors?.['pattern']">
+                          <div
+                            class="invalid-feedback"
+                            *ngIf="experienceControls[i].get('city')?.errors?.['pattern']"
+                          >
                             Solo se permiten letras y espacios
                           </div>
                         </div>
@@ -606,26 +719,43 @@ import html2canvas from 'html2canvas';
                             type="date"
                             class="form-control"
                             formControlName="startDate"
-                            [class.is-invalid]="experienceControls[i].get('startDate')?.invalid && experienceControls[i].get('startDate')?.touched"
+                            [class.is-invalid]="
+                              experienceControls[i].get('startDate')?.invalid &&
+                              experienceControls[i].get('startDate')?.touched
+                            "
                             required
                           />
-                          <div class="invalid-feedback" *ngIf="experienceControls[i].get('startDate')?.errors?.['required']">
+                          <div
+                            class="invalid-feedback"
+                            *ngIf="experienceControls[i].get('startDate')?.errors?.['required']"
+                          >
                             La fecha de inicio es obligatoria
                           </div>
                         </div>
                         <div class="form-group">
                           <label>Fecha de Fin</label>
-                          <input 
-                            type="date" 
-                            class="form-control" 
-                            formControlName="endDate" 
-                            [class.is-invalid]="experienceControls[i].get('endDate')?.invalid && experienceControls[i].get('endDate')?.touched"
+                          <input
+                            type="date"
+                            class="form-control"
+                            formControlName="endDate"
+                            [class.is-invalid]="
+                              experienceControls[i].get('endDate')?.invalid &&
+                              experienceControls[i].get('endDate')?.touched
+                            "
                           />
-                          <div class="invalid-feedback" *ngIf="experienceControls[i].get('endDate')?.errors?.['dateOrder']">
+                          <div
+                            class="invalid-feedback"
+                            *ngIf="experienceControls[i].get('endDate')?.errors?.['dateOrder']"
+                          >
                             La fecha de fin no puede ser anterior a la fecha de inicio
                           </div>
                           <div class="form-check mt-2">
-                            <input type="checkbox" class="form-check-input" formControlName="current" (change)="onCurrentExperienceChange(i)" />
+                            <input
+                              type="checkbox"
+                              class="form-check-input"
+                              formControlName="current"
+                              (change)="onCurrentExperienceChange(i)"
+                            />
                             <label class="form-check-label">Trabajo actual</label>
                           </div>
                         </div>
@@ -674,7 +804,6 @@ import html2canvas from 'html2canvas';
                         class="editor-content form-control"
                         contenteditable="true"
                         [attr.data-editor]="'experience-' + i"
-                        dir="ltr"
                         (input)="onEditorInputArray('experience', i, $event)"
                         [innerHTML]="experienceControls[i].get('description')?.value || ''"
                         style="min-height:60px;"
@@ -685,7 +814,7 @@ import html2canvas from 'html2canvas';
                       class="btn btn-danger btn-sm"
                       (click)="removeExperience(i)"
                     >
-                      🗑️ Eliminar
+                      Eliminar
                     </button>
                   </div>
                 </div>
@@ -697,12 +826,8 @@ import html2canvas from 'html2canvas';
                   class="card-header bg-primary text-white d-flex justify-content-between align-items-center"
                 >
                   <h5 class="text-bg">Habilidades</h5>
-                  <button
-                    type="button"
-                    class="btn btn-secondary btn-sm"
-                    (click)="addSkill()"
-                  >
-                    ➕ Agregar Habilidad
+                  <button type="button" class="btn btn-secondary btn-sm" (click)="addSkill()">
+                    Agregar Habilidad
                   </button>
                 </div>
                 <div class="card-body" formArrayName="skills">
@@ -715,14 +840,20 @@ import html2canvas from 'html2canvas';
                       <div class="col-md-6">
                         <div class="form-group">
                           <label>Habilidad *</label>
-                          <input 
-                            type="text" 
-                            class="form-control" 
-                            formControlName="name" 
-                            [class.is-invalid]="skillControls[i].get('name')?.invalid && skillControls[i].get('name')?.touched"
-                            required 
+                          <input
+                            type="text"
+                            class="form-control"
+                            formControlName="name"
+                            [class.is-invalid]="
+                              skillControls[i].get('name')?.invalid &&
+                              skillControls[i].get('name')?.touched
+                            "
+                            required
                           />
-                          <div class="invalid-feedback" *ngIf="skillControls[i].get('name')?.errors?.['required']">
+                          <div
+                            class="invalid-feedback"
+                            *ngIf="skillControls[i].get('name')?.errors?.['required']"
+                          >
                             El nombre de la habilidad es obligatorio
                           </div>
                         </div>
@@ -740,12 +871,8 @@ import html2canvas from 'html2canvas';
                         </div>
                       </div>
                     </div>
-                    <button
-                      type="button"
-                      class="btn btn-danger btn-sm"
-                      (click)="removeSkill(i)"
-                    >
-                      🗑️ Eliminar
+                    <button type="button" class="btn btn-danger btn-sm" (click)="removeSkill(i)">
+                      Eliminar
                     </button>
                   </div>
                 </div>
@@ -757,12 +884,8 @@ import html2canvas from 'html2canvas';
                   class="card-header bg-primary text-white d-flex justify-content-between align-items-center"
                 >
                   <h5 class="text-bg">Idiomas</h5>
-                  <button
-                    type="button"
-                    class="btn btn-secondary btn-sm"
-                    (click)="addLanguage()"
-                  >
-                    ➕ Agregar Idioma
+                  <button type="button" class="btn btn-secondary btn-sm" (click)="addLanguage()">
+                    Agregar Idioma
                   </button>
                 </div>
                 <div class="card-body" formArrayName="languages">
@@ -775,17 +898,26 @@ import html2canvas from 'html2canvas';
                       <div class="col-md-6">
                         <div class="form-group">
                           <label>Idioma *</label>
-                          <input 
-                            type="text" 
-                            class="form-control" 
-                            formControlName="language" 
-                            [class.is-invalid]="languageControls[i].get('language')?.invalid && languageControls[i].get('language')?.touched"
-                            required 
+                          <input
+                            type="text"
+                            class="form-control"
+                            formControlName="language"
+                            [class.is-invalid]="
+                              languageControls[i].get('language')?.invalid &&
+                              languageControls[i].get('language')?.touched
+                            "
+                            required
                           />
-                          <div class="invalid-feedback" *ngIf="languageControls[i].get('language')?.errors?.['required']">
+                          <div
+                            class="invalid-feedback"
+                            *ngIf="languageControls[i].get('language')?.errors?.['required']"
+                          >
                             El idioma es obligatorio
                           </div>
-                          <div class="invalid-feedback" *ngIf="languageControls[i].get('language')?.errors?.['pattern']">
+                          <div
+                            class="invalid-feedback"
+                            *ngIf="languageControls[i].get('language')?.errors?.['pattern']"
+                          >
                             Solo se permiten letras y espacios
                           </div>
                         </div>
@@ -809,12 +941,8 @@ import html2canvas from 'html2canvas';
                         </div>
                       </div>
                     </div>
-                    <button
-                      type="button"
-                      class="btn btn-danger btn-sm"
-                      (click)="removeLanguage(i)"
-                    >
-                      🗑️ Eliminar
+                    <button type="button" class="btn btn-danger btn-sm" (click)="removeLanguage(i)">
+                      Eliminar
                     </button>
                   </div>
                 </div>
@@ -868,7 +996,6 @@ import html2canvas from 'html2canvas';
                       class="editor-content form-control"
                       contenteditable="true"
                       data-editor="hobbies"
-                      dir="ltr"
                       (input)="onEditorInput('hobbies', $event)"
                       [innerHTML]="cvForm.get('hobbies')?.value || ''"
                       style="min-height:60px;"
@@ -886,7 +1013,7 @@ import html2canvas from 'html2canvas';
                     (click)="downloadPDF()"
                     [disabled]="!cvForm.valid"
                   >
-                    📥 Descargar PDF
+                    Descargar PDF
                   </button>
                 </div>
                 <div class="col-md-6">
@@ -895,7 +1022,7 @@ import html2canvas from 'html2canvas';
                     class="btn btn-secondary btn-lg btn-block"
                     (click)="saveDraft()"
                   >
-                    💾 Guardar Borrador
+                    Guardar Borrador
                   </button>
                 </div>
               </div>
@@ -905,7 +1032,9 @@ import html2canvas from 'html2canvas';
           <!-- Vista previa del CV en tiempo real -->
           <div class="col-md-6">
             <div class="card sticky-top" style="top: 20px;">
-              <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+              <div
+                class="card-header bg-primary text-white d-flex justify-content-between align-items-center"
+              >
                 <h5 class="mb-0">Vista Previa del CV</h5>
                 <div>
                   <span *ngIf="currentCvId" class="badge badge-light mr-2">
@@ -917,7 +1046,7 @@ import html2canvas from 'html2canvas';
                     (click)="downloadPDF()"
                     [disabled]="!cvForm.valid"
                   >
-                    📥 Descargar PDF
+                    Descargar PDF
                   </button>
                 </div>
               </div>
@@ -926,8 +1055,13 @@ import html2canvas from 'html2canvas';
                   <!-- Header -->
                   <div class="cv-header text-center mb-4">
                     <div class="py-3">
-                      <h1 class="mb-1 main-name">{{ cvForm.value.firstName || 'Nombre' }} {{ cvForm.value.lastName || 'Apellido' }}</h1>
-                      <h3 class="subtitle mb-2">{{ cvForm.value.desiredPosition || 'Posición deseada' }}</h3>
+                      <h1 class="mb-1 main-name">
+                        {{ cvForm.value.firstName || 'Nombre' }}
+                        {{ cvForm.value.lastName || 'Apellido' }}
+                      </h1>
+                      <h3 class="subtitle mb-2">
+                        {{ cvForm.value.desiredPosition || 'Posición deseada' }}
+                      </h3>
                     </div>
                   </div>
 
@@ -937,7 +1071,10 @@ import html2canvas from 'html2canvas';
                       <!-- Perfil -->
                       <div *ngIf="cvForm.value.profile" class="cv-section mb-4">
                         <h2 class="section-title">Perfil Profesional</h2>
-                        <div class="text-justify profile-content" [innerHTML]="cvForm.value.profile"></div>
+                        <div
+                          class="text-justify profile-content"
+                          [innerHTML]="cvForm.value.profile"
+                        ></div>
                       </div>
 
                       <!-- Experiencia Laboral -->
@@ -945,14 +1082,20 @@ import html2canvas from 'html2canvas';
                         <h2 class="section-title">Experiencia Laboral</h2>
                         <div *ngFor="let exp of cvForm.value.experience" class="cv-item mb-3">
                           <div class="d-flex justify-content-between">
-                            <h4 class="mb-1">{{ exp.position || 'Posición' }} - {{ exp.employer || 'Empleador' }}</h4>
+                            <h4 class="mb-1">
+                              {{ exp.position || 'Posición' }} - {{ exp.employer || 'Empleador' }}
+                            </h4>
                             <span class="date-range">
                               {{ formatDate(exp.startDate) }} -
                               {{ exp.current ? 'Presente' : formatDate(exp.endDate) }}
                             </span>
                           </div>
                           <p class="location mb-1">{{ exp.city || 'Ciudad' }}</p>
-                          <div class="description" *ngIf="exp.description" [innerHTML]="exp.description"></div>
+                          <div
+                            class="description"
+                            *ngIf="exp.description"
+                            [innerHTML]="exp.description"
+                          ></div>
                         </div>
                       </div>
 
@@ -968,7 +1111,11 @@ import html2canvas from 'html2canvas';
                             </span>
                           </div>
                           <p class="location mb-1">{{ edu.city || 'Ciudad' }}</p>
-                          <div class="description" *ngIf="edu.description" [innerHTML]="edu.description"></div>
+                          <div
+                            class="description"
+                            *ngIf="edu.description"
+                            [innerHTML]="edu.description"
+                          ></div>
                         </div>
                       </div>
                     </div>
@@ -978,9 +1125,9 @@ import html2canvas from 'html2canvas';
                       <!-- Foto -->
                       <div *ngIf="cvForm.value.photo" class="cv-section mb-4">
                         <div class="text-center">
-                          <img 
-                            [src]="cvForm.value.photo" 
-                            alt="Foto de perfil" 
+                          <img
+                            [src]="cvForm.value.photo"
+                            alt="Foto de perfil"
                             class="profile-photo"
                           />
                         </div>
@@ -990,23 +1137,24 @@ import html2canvas from 'html2canvas';
                       <div class="cv-section mb-4">
                         <h3 class="side-section-title">Contacto</h3>
                         <div class="cv-contact-item mb-2">
-                          ✉️ {{ cvForm.value.email || 'email@ejemplo.com' }}
+                          {{ cvForm.value.email || 'email@ejemplo.com' }}
                         </div>
                         <div class="cv-contact-item mb-2">
-                          📞 {{ cvForm.value.phone || '+1234567890' }}
+                          {{ cvForm.value.phone || '+1234567890' }}
                         </div>
                         <div class="cv-contact-item mb-2">
-                          📍 {{ cvForm.value.address || 'Dirección' }}, {{ cvForm.value.postalCode || 'CP' }},
+                          {{ cvForm.value.address || 'Dirección' }},
+                          {{ cvForm.value.postalCode || 'CP' }},
                           {{ cvForm.value.city || 'Ciudad' }}
                         </div>
                         <div *ngIf="cvForm.value.linkedin" class="cv-contact-item mb-2">
-                          💼 {{ cvForm.value.linkedin }}
+                          {{ cvForm.value.linkedin }}
                         </div>
                         <div *ngIf="cvForm.value.birthDate" class="cv-contact-item mb-2">
-                          🎂 {{ formatDate(cvForm.value.birthDate) }}
+                          {{ formatDate(cvForm.value.birthDate) }}
                         </div>
                         <div *ngIf="cvForm.value.birthPlace" class="cv-contact-item mb-2">
-                          🗺️ Nacimiento: {{ cvForm.value.birthPlace }}
+                          Nacimiento: {{ cvForm.value.birthPlace }}
                         </div>
                       </div>
 
@@ -1190,7 +1338,8 @@ import html2canvas from 'html2canvas';
         transition: width 0.3s ease;
       }
 
-      .profile-content, .hobbies-content {
+      .profile-content,
+      .hobbies-content {
         font-size: 0.95rem;
         line-height: 1.6;
         color: #444;
@@ -1201,7 +1350,7 @@ import html2canvas from 'html2canvas';
         .cv-container {
           flex-direction: column;
         }
-        
+
         .cv-main-column,
         .cv-side-column {
           flex: 0 0 100%;
@@ -1219,9 +1368,52 @@ import html2canvas from 'html2canvas';
         margin-top: 0.25rem;
         font-size: 0.875rem;
         color: #dc3545;
+        border: none !important;
+        box-shadow: none !important;
+        background: none !important;
       }
 
-      /* Editor WYSIWYG simple */
+      /* Campos del formulario con borde primario pequeño */
+      .form-control {
+        border: 1px solid var(--color-primary, #007bff) !important;
+        border-radius: 4px;
+        box-shadow: none !important;
+      }
+
+      .form-control:focus {
+        border-color: var(--color-primary, #007bff) !important;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.1) !important;
+      }
+
+      /* Botones sin relieve */
+      .btn {
+        box-shadow: none !important;
+        border: 1px solid transparent !important;
+        background-image: none !important;
+        text-shadow: none !important;
+        -webkit-appearance: none !important;
+        appearance: none !important;
+      }
+
+      .btn:focus,
+      .btn:active,
+      .btn:hover {
+        box-shadow: none !important;
+        transform: none !important;
+      }
+
+      .btn-primary,
+      .btn-secondary,
+      .btn-success,
+      .btn-danger,
+      .btn-light,
+      .btn-dark {
+        background-image: none !important;
+        box-shadow: none !important;
+        border: 1px solid transparent !important;
+      }
+
+      /* Editor WYSIWYG simple - Solución para dirección del texto */
       .editor-toolbar {
         display: flex;
         gap: 6px;
@@ -1236,18 +1428,27 @@ import html2canvas from 'html2canvas';
         min-height: 60px;
         overflow: auto;
         background-color: rgba(255, 255, 255, 0.92) !important;
-        border: 1px solid #dee2e6 !important;
+        border: 1px solid var(--color-primary, #007bff) !important;
         border-radius: 4px;
         padding: 8px 10px;
         color: inherit;
         caret-color: auto;
+        direction: ltr !important;
+        text-align: left !important;
+        unicode-bidi: plaintext !important;
       }
 
-      .editor-content,
       .editor-content * {
         direction: ltr !important;
         text-align: left !important;
-        unicode-bidi: isolate !important;
+        unicode-bidi: plaintext !important;
+      }
+
+      /* Forzar LTR en todos los elementos del editor */
+      [contenteditable='true'] {
+        direction: ltr !important;
+        text-align: left !important;
+        unicode-bidi: plaintext !important;
       }
 
       /* Variables CSS para colores */
@@ -1258,6 +1459,20 @@ import html2canvas from 'html2canvas';
         --color-bg: #f8f9fa;
         --color-text-1: #212529;
         --color-text-2: #6c757d;
+      }
+
+      /* Títulos con color de fondo */
+      .text-bg {
+        color: var(--color-bg, #f8f9fa) !important;
+      }
+
+      /* Quitar marco de las advertencias */
+      .alert,
+      .alert-danger,
+      .alert-warning {
+        border: none !important;
+        box-shadow: none !important;
+        background: none !important;
       }
     `,
   ],
@@ -1298,7 +1513,7 @@ export class CvComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.loadCVList();
     this.applyPaletteFromLocalStorage();
-    
+
     try {
       window.addEventListener('storage', this.storageHandler, false);
     } catch (e) {}
@@ -1334,11 +1549,11 @@ export class CvComponent implements OnInit, OnDestroy {
     try {
       const raw = localStorage.getItem('cvList');
       this.cvList = raw ? JSON.parse(raw) : [];
-      
+
       // Cargar automáticamente el último CV modificado
       if (this.cvList.length > 0) {
-        const lastModified = this.cvList.sort((a, b) => 
-          new Date(b.lastModified).getTime() - new Date(a.lastModified).getTime()
+        const lastModified = this.cvList.sort(
+          (a, b) => new Date(b.lastModified).getTime() - new Date(a.lastModified).getTime()
         )[0];
         this.loadCV(lastModified.id);
       }
@@ -1385,18 +1600,18 @@ export class CvComponent implements OnInit, OnDestroy {
       const cvData = this.cvForm.value;
       const name = this.newCvName.trim();
       const id = this.currentCvId || this.generateId();
-      
+
       const cvToSave = {
         id: id,
         name: name,
         data: cvData,
         lastModified: new Date().toISOString(),
-        createdAt: this.currentCvId ? this.getCVById(id)?.createdAt : new Date().toISOString()
+        createdAt: this.currentCvId ? this.getCVById(id)?.createdAt : new Date().toISOString(),
       };
 
       // Obtener lista existente
       const existingList = this.getCVList();
-      
+
       // Si es un CV existente, actualizar; sino agregar nuevo
       const existingIndex = existingList.findIndex((cv: any) => cv.id === id);
       if (existingIndex >= 0) {
@@ -1404,15 +1619,15 @@ export class CvComponent implements OnInit, OnDestroy {
       } else {
         existingList.push(cvToSave);
       }
-      
+
       // Guardar en localStorage
       localStorage.setItem('cvList', JSON.stringify(existingList));
       this.cvList = existingList;
       this.currentCvId = id;
-      
+
       this.showSaveInput = false;
       this.newCvName = '';
-      
+
       alert(`CV "${name}" guardado correctamente`);
     } catch (e) {
       console.error('Error guardando CV:', e);
@@ -1455,12 +1670,12 @@ export class CvComponent implements OnInit, OnDestroy {
         const updatedList = cvList.filter((cv: any) => cv.id !== cvId);
         localStorage.setItem('cvList', JSON.stringify(updatedList));
         this.cvList = updatedList;
-        
+
         // Si era el CV actual, limpiar formulario
         if (this.currentCvId === cvId) {
           this.newCV();
         }
-        
+
         alert('CV eliminado correctamente');
       } catch (e) {
         console.error('Error eliminando CV:', e);
@@ -1478,7 +1693,7 @@ export class CvComponent implements OnInit, OnDestroy {
         return;
       }
     }
-    
+
     this.cvForm.reset();
     this.currentCvId = null;
     this.clearFormArrays();
@@ -1552,7 +1767,7 @@ export class CvComponent implements OnInit, OnDestroy {
       month: '2-digit',
       year: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   }
 
@@ -1664,7 +1879,7 @@ export class CvComponent implements OnInit, OnDestroy {
   onCurrentEducationChange(index: number) {
     const educationGroup = (this.cvForm.get('education') as FormArray).at(index);
     const current = educationGroup.get('current')?.value;
-    
+
     if (current) {
       educationGroup.get('endDate')?.disable();
       educationGroup.get('endDate')?.clearValidators();
@@ -1678,7 +1893,7 @@ export class CvComponent implements OnInit, OnDestroy {
   onCurrentExperienceChange(index: number) {
     const experienceGroup = (this.cvForm.get('experience') as FormArray).at(index);
     const current = experienceGroup.get('current')?.value;
-    
+
     if (current) {
       experienceGroup.get('endDate')?.disable();
       experienceGroup.get('endDate')?.clearValidators();
@@ -1691,28 +1906,34 @@ export class CvComponent implements OnInit, OnDestroy {
 
   // Creación de grupos del formulario
   private createEducationGroup(): FormGroup {
-    const group = this.fb.group({
-      school: ['', Validators.required],
-      city: ['', [Validators.required, this.onlyLettersAndSpacesValidator]],
-      startDate: ['', Validators.required],
-      endDate: [''],
-      current: [false],
-      description: [''],
-    }, { validators: this.dateOrderValidator });
+    const group = this.fb.group(
+      {
+        school: ['', Validators.required],
+        city: ['', [Validators.required, this.onlyLettersAndSpacesValidator]],
+        startDate: ['', Validators.required],
+        endDate: [''],
+        current: [false],
+        description: [''],
+      },
+      { validators: this.dateOrderValidator }
+    );
 
     return group;
   }
 
   private createExperienceGroup(): FormGroup {
-    const group = this.fb.group({
-      position: ['', Validators.required],
-      employer: ['', Validators.required],
-      city: ['', [Validators.required, this.onlyLettersAndSpacesValidator]],
-      startDate: ['', Validators.required],
-      endDate: [''],
-      current: [false],
-      description: [''],
-    }, { validators: this.dateOrderValidator });
+    const group = this.fb.group(
+      {
+        position: ['', Validators.required],
+        employer: ['', Validators.required],
+        city: ['', [Validators.required, this.onlyLettersAndSpacesValidator]],
+        startDate: ['', Validators.required],
+        endDate: [''],
+        current: [false],
+        description: [''],
+      },
+      { validators: this.dateOrderValidator }
+    );
 
     return group;
   }
@@ -1836,7 +2057,7 @@ export class CvComponent implements OnInit, OnDestroy {
     try {
       const cardEl = this.cvPreview?.nativeElement;
       if (!cardEl) return;
-      
+
       const rootStyles = getComputedStyle(document.documentElement);
       const vars = [
         '--color-primary',
@@ -1922,7 +2143,7 @@ export class CvComponent implements OnInit, OnDestroy {
     const experienceArray = this.cvForm.get('experience') as FormArray;
     const skillsArray = this.cvForm.get('skills') as FormArray;
     const languagesArray = this.cvForm.get('languages') as FormArray;
-    
+
     while (educationArray.length > 0) educationArray.removeAt(0);
     while (experienceArray.length > 0) experienceArray.removeAt(0);
     while (skillsArray.length > 0) skillsArray.removeAt(0);
@@ -2058,32 +2279,53 @@ export class CvComponent implements OnInit, OnDestroy {
   }
 
   // =========================================================================
-  // MÉTODOS DEL EDITOR WYSIWYG
+  // MÉTODOS DEL EDITOR WYSIWYG - CORREGIDOS
   // =========================================================================
 
   applyFormat(editor: string, command: string, value?: string) {
     const editorEl = this.getEditorElement(editor);
     if (!editorEl) return;
 
+    // Guardar la selección actual
+    this.saveSelection(editor);
+
     document.execCommand(command, false, value);
     editorEl.focus();
-    this.saveSelection(editor);
+
+    // Forzar actualización del formulario
+    this.onEditorInput(editor, new Event('input'));
   }
 
   applyFormatArray(arrayName: string, index: number, command: string, value?: string) {
     const editorEl = this.getEditorElement(arrayName, index);
     if (!editorEl) return;
 
+    // Guardar la selección actual
+    this.saveSelection(arrayName, index);
+
     document.execCommand(command, false, value);
     editorEl.focus();
-    this.saveSelection(arrayName, index);
+
+    // Forzar actualización del formulario
+    this.onEditorInputArray(arrayName, index, new Event('input'));
   }
 
   private saveSelection(editor: string, index?: number) {
     try {
+      const editorEl = this.getEditorElement(editor, index);
+      if (!editorEl) return;
+
       const sel = window.getSelection();
       if (!sel || sel.rangeCount === 0) return;
-      return;
+
+      const range = sel.getRangeAt(0);
+      const preCaretRange = range.cloneRange();
+      preCaretRange.selectNodeContents(editorEl);
+      preCaretRange.setEnd(range.startContainer, range.startOffset);
+      const startOffset = preCaretRange.toString().length;
+
+      // Guardar la posición del caret
+      localStorage.setItem(`caret-${editor}-${index || ''}`, startOffset.toString());
     } catch (e) {
       // ignore
     }
@@ -2091,9 +2333,49 @@ export class CvComponent implements OnInit, OnDestroy {
 
   private restoreSelection(editor: string, index?: number) {
     try {
+      const editorEl = this.getEditorElement(editor, index);
+      if (!editorEl) return;
+
+      const savedOffset = localStorage.getItem(`caret-${editor}-${index || ''}`);
+      if (!savedOffset) return;
+
       const sel = window.getSelection();
       if (!sel) return;
-      return;
+
+      sel.removeAllRanges();
+      const range = document.createRange();
+
+      let charIndex = 0;
+      const nodeStack: Node[] = [editorEl];
+      let node: Node | null = null;
+      let foundStart = false;
+
+      while ((node = nodeStack.pop()!) !== undefined) {
+        if (node.nodeType === 3) {
+          // Text node
+          const nextCharIndex = charIndex + (node.textContent?.length || 0);
+          if (
+            !foundStart &&
+            parseInt(savedOffset) >= charIndex &&
+            parseInt(savedOffset) <= nextCharIndex
+          ) {
+            range.setStart(node, parseInt(savedOffset) - charIndex);
+            range.setEnd(node, parseInt(savedOffset) - charIndex);
+            foundStart = true;
+          }
+          charIndex = nextCharIndex;
+        } else {
+          // Para elementos no-texto, agregar hijos en orden inverso
+          const children = node.childNodes;
+          for (let i = children.length - 1; i >= 0; i--) {
+            nodeStack.push(children[i]);
+          }
+        }
+      }
+
+      if (foundStart) {
+        sel.addRange(range);
+      }
     } catch (e) {
       // ignore
     }
@@ -2131,8 +2413,11 @@ export class CvComponent implements OnInit, OnDestroy {
     }
 
     this.cvForm.get(editor)?.setValue(content);
-    this.saveSelection(editor);
-    this.placeCaretAtEnd(target);
+
+    // Restaurar selección después de actualizar
+    setTimeout(() => {
+      this.restoreSelection(editor);
+    }, 0);
   }
 
   onEditorInputArray(arrayName: string, index: number, event: Event) {
@@ -2146,8 +2431,11 @@ export class CvComponent implements OnInit, OnDestroy {
 
     const control = (this.cvForm.get(arrayName) as FormArray).at(index);
     control.get('description')?.setValue(content);
-    this.saveSelection(arrayName, index);
-    this.placeCaretAtEnd(target);
+
+    // Restaurar selección después de actualizar
+    setTimeout(() => {
+      this.restoreSelection(arrayName, index);
+    }, 0);
   }
 
   createLink(editor: string, index?: number) {
@@ -2156,9 +2444,17 @@ export class CvComponent implements OnInit, OnDestroy {
     const selector = index !== undefined ? `${editor}-${index}` : editor;
     const el = this.getEditorElement(selector, undefined);
     if (!el) return;
+
+    // Guardar selección antes de crear el enlace
+    this.saveSelection(editor, index);
+
     document.execCommand('createLink', false, url);
     const ev = new Event('input', { bubbles: true });
     el.dispatchEvent(ev);
-    this.placeCaretAtEnd(el);
+
+    // Restaurar selección después de crear el enlace
+    setTimeout(() => {
+      this.restoreSelection(editor, index);
+    }, 0);
   }
 }
