@@ -15,18 +15,16 @@ import { CommonModule } from '@angular/common';
 
       /* CSS variables defaults (scoped to preview) */
       .preview-root {
-        --color-primary: #ed6436;
-        --color-secondary: #6c757d;
-        --color-text-1: #212529;
-        --color-text-2: #6c757d;
-        --color-bg: #f8f9fa;
-
-        --title-font: 'Nunito', sans-serif;
-        --text-font: 'Nunito Sans', sans-serif;
-
-        --title-size: 40px; /* px */
-        --subtitle-size: 20px; /* px */
-        --text-size: 16px; /* px */
+        --color-primary: var(--color-primary);
+        --color-secondary: var(--color-secondary);
+        --color-text-1: var(--color-text-1);
+        --color-text-2: var(--color-text-2);
+        --color-bg: var(--color-bg);
+        --title-font: var(--title-font);
+        --text-font: var(--text-font);
+        --title-size: var(--title-size);
+        --subtitle-size: var(--subtitle-size);
+        --text-size: var(--text-size);
       }
 
       /* Sidebar - unchanged and outside preview */
@@ -1254,42 +1252,67 @@ export class ConfigPage implements AfterViewInit, OnDestroy {
             return;
           }
           const family = 'UploadedFont_' + Date.now();
-          const url = URL.createObjectURL(file);
-          const style = document.createElement('style');
           const fmt = name.endsWith('.otf') ? 'opentype' : 'truetype';
-          style.innerHTML = `
-          @font-face {
-            font-family: "${family}";
-            src: url("${url}") format("${fmt}");
-            font-weight: normal;
-            font-style: normal;
-            font-display: swap;
-          }
-        `;
-          document.head.appendChild(style);
 
-          const addOption = (select: HTMLSelectElement, familyName: string, label?: string) => {
-            const opt = document.createElement('option');
-            opt.value = familyName;
-            opt.text = label || familyName;
-            select.appendChild(opt);
+          // Read file as DataURL so we can persist it in localStorage and restore after reload
+          const reader = new FileReader();
+          reader.onload = () => {
+            const dataUrl = String(reader.result || '');
+            // inject @font-face now
+            const style = document.createElement('style');
+            style.innerHTML = `
+                @font-face {
+                  font-family: "${family}";
+                  src: url("${dataUrl}") format("${fmt}");
+                  font-weight: normal;
+                  font-style: normal;
+                  font-display: swap;
+                }
+              `;
+            document.head.appendChild(style);
+
+            // add option to selects
+            const addOption = (
+              select: HTMLSelectElement | null,
+              familyName: string,
+              label?: string
+            ) => {
+              if (!select) return;
+              const opt = document.createElement('option');
+              opt.value = familyName;
+              opt.text = label || familyName;
+              select.appendChild(opt);
+            };
+            const titleMain = root.querySelector('#title-font') as HTMLSelectElement;
+            const textMain = root.querySelector('#text-font') as HTMLSelectElement;
+            if (titleMain) addOption(titleMain, family, file.name + ' (uploaded)');
+            if (textMain) addOption(textMain, family, file.name + ' (uploaded)');
+
+            if (titleMain) titleMain.value = family;
+            if (textMain) textMain.value = family;
+
+            this.applyTypographyToElement(previewRoot, {
+              titleFont: `"${family}", sans-serif`,
+              textFont: `"${family}", sans-serif`,
+              titleSize: Number(titleSize?.value) || 40,
+              subtitleSize: Number(subtitleSize?.value) || 20,
+              textSize: Number(textSize?.value) || 16,
+            });
+
+            // persist uploaded font in localStorage so it survives reload
+            try {
+              const uploadedRaw = localStorage.getItem('uploaded_fonts');
+              const arr = uploadedRaw ? JSON.parse(uploadedRaw) : [];
+              arr.push({ family, dataUrl, fmt, name: file.name });
+              localStorage.setItem('uploaded_fonts', JSON.stringify(arr));
+            } catch (e) {
+              /* ignore storage errors */
+            }
+
+            this.showToast('Fuente subida y añadida a las opciones', 'info');
+            fontUploadInput.value = '';
           };
-          if (titleFont) addOption(titleFont, family, file.name + ' (uploaded)');
-          if (textFont) addOption(textFont, family, file.name + ' (uploaded)');
-
-          if (titleFont) titleFont.value = family;
-          if (textFont) textFont.value = family;
-
-          this.applyTypographyToElement(previewRoot, {
-            titleFont: `"${family}", sans-serif`,
-            textFont: `"${family}", sans-serif`,
-            titleSize: Number(titleSize?.value) || 40,
-            subtitleSize: Number(subtitleSize?.value) || 20,
-            textSize: Number(textSize?.value) || 16,
-          });
-
-          this.showToast('Fuente subida y añadida a las opciones', 'info');
-          fontUploadInput.value = '';
+          reader.readAsDataURL(file);
         })
       );
     }

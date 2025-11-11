@@ -27,4 +27,8 @@ export const routes: Routes = [
     path: 'config',
     loadComponent: () => import('./pages/config/config').then((m) => m.ConfigPage),
   },
+  {
+    path: 'cv',
+    loadComponent: () => import('./pages/cv/cv').then((m) => m.CvComponent),
+  },
 ];

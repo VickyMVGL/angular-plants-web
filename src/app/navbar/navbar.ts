@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 
 @Component({
   selector: 'app-navbar',
@@ -70,11 +70,11 @@ import { RouterModule } from '@angular/router';
             >
 
             <a
-              routerLink="/config"
+              routerLink="/cv"
               routerLinkActive="active"
               class="nav-item nav-link"
-              (click)="onNavClick()"
-              >Config</a
+              (click)="onCvClick($event)"
+              >Curriculum</a
             >
           </div>
 
@@ -114,6 +114,9 @@ export class Navbar {
   menuOpen = false;
   dropdownOpen = false;
 
+  // inject Router to navigate programmatically and capture errors
+  constructor(private router: Router) {}
+
   toggleMenu(): void {
     this.menuOpen = !this.menuOpen;
     // cerrar dropdown si cerramos el menu
@@ -128,6 +131,20 @@ export class Navbar {
   onNavClick(): void {
     // cuando el usuario hace click en un link, cerramos el menú (móvil)
     this.closeMenu();
+  }
+
+  // new: specific logger for CV link to help debug navigation not firing
+  onCvClick(event: Event): void {
+    // prevent default full-page navigation in case the anchor tries to reload the page
+    event.preventDefault();
+    console.log('[Navbar] CV link clicked', event);
+    // close mobile menu first
+    this.onNavClick();
+    // navigate programmatically and log result / errors for debugging
+    this.router
+      .navigateByUrl('/cv')
+      .then((ok) => console.log('[Navbar] navigateByUrl /cv result:', ok))
+      .catch((err) => console.error('[Navbar] navigateByUrl /cv error:', err));
   }
 
   toggleDropdown(event: Event): void {

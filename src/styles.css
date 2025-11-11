@@ -6,11 +6,11 @@
    =========================== */
 
 :root {
-  --color-primary: #ed6436;
-  --color-secondary: #65c178;
-  --color-text-1: #212529;
-  --color-text-2: #6c757d;
-  --color-bg: #f8f9fa;
+  --color-primary: var(--color-primary);
+  --color-secondary: var(--color-secondary);
+  --color-text-1: var(--color-text-1);
+  --color-text-2: var(--color-text-2);
+  --color-bg: var(--color-bg);
 
   --title-font: 'Nunito', sans-serif;
   --text-font: 'Nunito Sans', sans-serif;
