@@ -1,5 +1,5 @@
 // cv.component.ts
-import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -28,7 +28,7 @@ import html2canvas from 'html2canvas';
               [value]="selectedDesign"
               (change)="onDesignChange($any($event.target).value)"
             >
-              <option value="standard">Standard</option>
+              <option value="standard">Estandar</option>
               <option value="circular">Circular</option>
             </select>
           </div>
@@ -52,7 +52,7 @@ import html2canvas from 'html2canvas';
           <!-- Detalles Personales -->
           <div class="card mb-4">
             <div class="card-header bg-primary text-white">
-              <h5 class="mb-0">Detalles Personales</h5>
+              <h5 class="text-bg">Detalles Personales</h5>
             </div>
             <div class="card-body">
               <div class="row">
@@ -136,16 +136,70 @@ import html2canvas from 'html2canvas';
           <!-- Perfil -->
           <div class="card mb-4">
             <div class="card-header bg-primary text-white">
-              <h5 class="mb-0">Perfil</h5>
+              <h5 class="text-bg">Perfil</h5>
             </div>
             <div class="card-body">
               <div class="form-group">
-                <textarea
-                  class="form-control"
-                  rows="4"
-                  formControlName="profile"
-                  placeholder="Describe tu perfil profesional..."
-                ></textarea>
+                <div class="editor-toolbar mb-2">
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-light mr-1"
+                    (click)="applyFormat('profile', 'bold')"
+                  >
+                    B
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-light mr-1"
+                    (click)="applyFormat('profile', 'italic')"
+                  >
+                    <i>i</i>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-light mr-1"
+                    (click)="applyFormat('profile', 'underline')"
+                  >
+                    U
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-light mr-1"
+                    (click)="applyFormat('profile', 'insertUnorderedList')"
+                  >
+                    • List
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-light mr-1"
+                    (click)="applyFormat('profile', 'insertOrderedList')"
+                  >
+                    1. List
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-light mr-1"
+                    (click)="createLink('profile')"
+                  >
+                    Link
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-light"
+                    (click)="applyFormat('profile', 'removeFormat')"
+                  >
+                    Clear
+                  </button>
+                </div>
+                <div
+                  class="editor-content form-control"
+                  contenteditable="true"
+                  data-editor="profile"
+                  dir="ltr"
+                  (input)="onEditorInput('profile', $event)"
+                  [innerHTML]="cvForm.get('profile')?.value || ''"
+                  style="min-height:90px;"
+                ></div>
               </div>
             </div>
           </div>
@@ -155,8 +209,13 @@ import html2canvas from 'html2canvas';
             <div
               class="card-header bg-primary text-white d-flex justify-content-between align-items-center"
             >
-              <h5 class="mb-0">Educación</h5>
-              <button type="button" class="btn btn-secondary btn-sm" (click)="addEducation()">
+              <h5 class="text-bg">Educación</h5>
+              <button
+                type="button"
+                class="btn btn-secondary btn-sm"
+                (click)="addEducation()"
+                style="box-shadow:none!important;border:none!important;background-image:none!important;outline:none!important;-webkit-appearance:none!important;appearance:none!important;"
+              >
                 Agregar Educación
               </button>
             </div>
@@ -199,9 +258,59 @@ import html2canvas from 'html2canvas';
                 </div>
                 <div class="form-group">
                   <label>Descripción</label>
-                  <textarea class="form-control" rows="3" formControlName="description"></textarea>
+                  <div class="editor-toolbar mb-2">
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-light mr-1"
+                      (click)="applyFormatArray('education', i, 'bold')"
+                    >
+                      B
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-light mr-1"
+                      (click)="applyFormatArray('education', i, 'italic')"
+                    >
+                      <i>i</i>
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-light mr-1"
+                      (click)="applyFormatArray('education', i, 'underline')"
+                    >
+                      U
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-light mr-1"
+                      (click)="applyFormatArray('education', i, 'insertUnorderedList')"
+                    >
+                      • List
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-light"
+                      (click)="applyFormatArray('education', i, 'removeFormat')"
+                    >
+                      Clear
+                    </button>
+                  </div>
+                  <div
+                    class="editor-content form-control"
+                    contenteditable="true"
+                    [attr.data-editor]="'education-' + i"
+                    dir="ltr"
+                    (input)="onEditorInputArray('education', i, $event)"
+                    [innerHTML]="educationControls[i].get('description')?.value || ''"
+                    style="min-height:60px;"
+                  ></div>
                 </div>
-                <button type="button" class="btn btn-danger btn-sm" (click)="removeEducation(i)">
+                <button
+                  type="button"
+                  class="btn btn-danger btn-sm"
+                  (click)="removeEducation(i)"
+                  style="box-shadow:none!important;border:none!important;background-image:none!important;outline:none!important;-webkit-appearance:none!important;appearance:none!important;"
+                >
                   Eliminar
                 </button>
               </div>
@@ -213,8 +322,13 @@ import html2canvas from 'html2canvas';
             <div
               class="card-header bg-primary text-white d-flex justify-content-between align-items-center"
             >
-              <h5 class="mb-0">Experiencia Laboral</h5>
-              <button type="button" class="btn btn-secondary btn-sm" (click)="addExperience()">
+              <h5 class="text-bg">Experiencia Laboral</h5>
+              <button
+                type="button"
+                class="btn btn-secondary btn-sm"
+                (click)="addExperience()"
+                style="box-shadow:none!important;border:none!important;background-image:none!important;outline:none!important;-webkit-appearance:none!important;appearance:none!important;"
+              >
                 Agregar Experiencia
               </button>
             </div>
@@ -261,9 +375,59 @@ import html2canvas from 'html2canvas';
                 </div>
                 <div class="form-group">
                   <label>Descripción</label>
-                  <textarea class="form-control" rows="3" formControlName="description"></textarea>
+                  <div class="editor-toolbar mb-2">
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-light mr-1"
+                      (click)="applyFormatArray('experience', i, 'bold')"
+                    >
+                      B
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-light mr-1"
+                      (click)="applyFormatArray('experience', i, 'italic')"
+                    >
+                      <i>i</i>
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-light mr-1"
+                      (click)="applyFormatArray('experience', i, 'underline')"
+                    >
+                      U
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-light mr-1"
+                      (click)="applyFormatArray('experience', i, 'insertUnorderedList')"
+                    >
+                      • List
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-light"
+                      (click)="applyFormatArray('experience', i, 'removeFormat')"
+                    >
+                      Clear
+                    </button>
+                  </div>
+                  <div
+                    class="editor-content form-control"
+                    contenteditable="true"
+                    [attr.data-editor]="'experience-' + i"
+                    dir="ltr"
+                    (input)="onEditorInputArray('experience', i, $event)"
+                    [innerHTML]="experienceControls[i].get('description')?.value || ''"
+                    style="min-height:60px;"
+                  ></div>
                 </div>
-                <button type="button" class="btn btn-danger btn-sm" (click)="removeExperience(i)">
+                <button
+                  type="button"
+                  class="btn btn-danger btn-sm"
+                  (click)="removeExperience(i)"
+                  style="box-shadow:none!important;border:none!important;background-image:none!important;outline:none!important;-webkit-appearance:none!important;appearance:none!important;"
+                >
                   Eliminar
                 </button>
               </div>
@@ -275,8 +439,13 @@ import html2canvas from 'html2canvas';
             <div
               class="card-header bg-primary text-white d-flex justify-content-between align-items-center"
             >
-              <h5 class="mb-0">Habilidades</h5>
-              <button type="button" class="btn btn-secondary btn-sm" (click)="addSkill()">
+              <h5 class="text-bg">Habilidades</h5>
+              <button
+                type="button"
+                class="btn btn-secondary btn-sm"
+                (click)="addSkill()"
+                style="box-shadow:none!important;border:none!important;background-image:none!important;outline:none!important;-webkit-appearance:none!important;appearance:none!important;"
+              >
                 Agregar Habilidad
               </button>
             </div>
@@ -306,7 +475,12 @@ import html2canvas from 'html2canvas';
                     </div>
                   </div>
                 </div>
-                <button type="button" class="btn btn-danger btn-sm" (click)="removeSkill(i)">
+                <button
+                  type="button"
+                  class="btn btn-danger btn-sm"
+                  (click)="removeSkill(i)"
+                  style="box-shadow:none!important;border:none!important;background-image:none!important;outline:none!important;-webkit-appearance:none!important;appearance:none!important;"
+                >
                   Eliminar
                 </button>
               </div>
@@ -318,8 +492,13 @@ import html2canvas from 'html2canvas';
             <div
               class="card-header bg-primary text-white d-flex justify-content-between align-items-center"
             >
-              <h5 class="mb-0">Idiomas</h5>
-              <button type="button" class="btn btn-secondary btn-sm" (click)="addLanguage()">
+              <h5 class="text-bg">Idiomas</h5>
+              <button
+                type="button"
+                class="btn btn-secondary btn-sm"
+                (click)="addLanguage()"
+                style="box-shadow:none!important;border:none!important;background-image:none!important;outline:none!important;-webkit-appearance:none!important;appearance:none!important;"
+              >
                 Agregar Idioma
               </button>
             </div>
@@ -355,7 +534,12 @@ import html2canvas from 'html2canvas';
                     </div>
                   </div>
                 </div>
-                <button type="button" class="btn btn-danger btn-sm" (click)="removeLanguage(i)">
+                <button
+                  type="button"
+                  class="btn btn-danger btn-sm"
+                  (click)="removeLanguage(i)"
+                  style="box-shadow:none!important;border:none!important;background-image:none!important;outline:none!important;-webkit-appearance:none!important;appearance:none!important;"
+                >
                   Eliminar
                 </button>
               </div>
@@ -365,16 +549,56 @@ import html2canvas from 'html2canvas';
           <!-- Hobbies -->
           <div class="card mb-4">
             <div class="card-header bg-primary text-white">
-              <h5 class="mb-0">Hobbies</h5>
+              <h5 class="text-bg">Hobbies</h5>
             </div>
             <div class="card-body">
               <div class="form-group">
-                <textarea
-                  class="form-control"
-                  rows="3"
-                  formControlName="hobbies"
-                  placeholder="Tus hobbies e intereses..."
-                ></textarea>
+                <div class="editor-toolbar mb-2">
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-light mr-1"
+                    (click)="applyFormat('hobbies', 'bold')"
+                  >
+                    B
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-light mr-1"
+                    (click)="applyFormat('hobbies', 'italic')"
+                  >
+                    <i>i</i>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-light mr-1"
+                    (click)="applyFormat('hobbies', 'underline')"
+                  >
+                    U
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-light mr-1"
+                    (click)="applyFormat('hobbies', 'insertUnorderedList')"
+                  >
+                    • List
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-light"
+                    (click)="applyFormat('hobbies', 'removeFormat')"
+                  >
+                    Clear
+                  </button>
+                </div>
+                <div
+                  class="editor-content form-control"
+                  contenteditable="true"
+                  data-editor="hobbies"
+                  dir="ltr"
+                  (input)="onEditorInput('hobbies', $event)"
+                  [innerHTML]="cvForm.get('hobbies')?.value || ''"
+                  style="min-height:60px;"
+                ></div>
               </div>
             </div>
           </div>
@@ -386,6 +610,7 @@ import html2canvas from 'html2canvas';
                 type="submit"
                 class="btn btn-primary btn-lg btn-block"
                 [disabled]="!cvForm.valid"
+                style="box-shadow:none!important;border:none!important;background-image:none!important;outline:none!important;-webkit-appearance:none!important;appearance:none!important;"
               >
                 Generar Vista Previa
               </button>
@@ -396,6 +621,7 @@ import html2canvas from 'html2canvas';
                 class="btn btn-success btn-lg btn-block"
                 (click)="downloadPDF()"
                 [disabled]="!cvForm.valid"
+                style="box-shadow:none!important;border:none!important;background-image:none!important;outline:none!important;-webkit-appearance:none!important;appearance:none!important;"
               >
                 Descargar PDF
               </button>
@@ -405,6 +631,7 @@ import html2canvas from 'html2canvas';
                 type="button"
                 class="btn btn-secondary btn-lg btn-block"
                 (click)="saveDraft()"
+                style="box-shadow:none!important;border:none!important;background-image:none!important;outline:none!important;-webkit-appearance:none!important;appearance:none!important;"
               >
                 Guardar Borrador
               </button>
@@ -413,17 +640,26 @@ import html2canvas from 'html2canvas';
         </form>
 
         <!-- Vista previa del CV para PDF -->
-        <div #cvPreview *ngIf="showPreview" class="card mt-5">
+        <div #cvPreview *ngIf="showPreview" class="card mt-5 cv-preview-card">
           <div
             class="card-header bg-primary text-white d-flex justify-content-between align-items-center"
           >
             <h5 class="mb-0">Vista Previa del CV</h5>
-            <button type="button" class="btn btn-success btn-sm" (click)="downloadPDF()">
+            <button
+              type="button"
+              class="btn btn-success btn-sm"
+              (click)="downloadPDF()"
+              style="box-shadow:none!important;border:none!important;background-image:none!important;outline:none!important;-webkit-appearance:none!important;appearance:none!important;"
+            >
               Descargar PDF
             </button>
           </div>
           <div class="card-body p-0">
-            <div [ngClass]="getCvClass()" class="cv-preview p-4" style="background: white;">
+            <div
+              [ngClass]="getCvClass()"
+              class="cv-preview p-4 preview-root"
+              style="background: white;"
+            >
               <!-- Header -->
               <div
                 class="cv-header text-center mb-4"
@@ -454,7 +690,7 @@ import html2canvas from 'html2canvas';
                     <h4 class="section-title" [ngClass]="'text-' + selectedColor">
                       Perfil Profesional
                     </h4>
-                    <p class="text-justify">{{ cvForm.value.profile }}</p>
+                    <div class="text-justify" [innerHTML]="cvForm.value.profile"></div>
                   </div>
 
                   <!-- Experiencia Laboral -->
@@ -471,7 +707,7 @@ import html2canvas from 'html2canvas';
                         </span>
                       </div>
                       <p class="text-muted mb-1">{{ exp.city }}</p>
-                      <p class="mb-0" *ngIf="exp.description">{{ exp.description }}</p>
+                      <p class="mb-0" *ngIf="exp.description" [innerHTML]="exp.description"></p>
                     </div>
                   </div>
 
@@ -487,7 +723,7 @@ import html2canvas from 'html2canvas';
                         </span>
                       </div>
                       <p class="text-muted mb-1">{{ edu.city }}</p>
-                      <p class="mb-0" *ngIf="edu.description">{{ edu.description }}</p>
+                      <p class="mb-0" *ngIf="edu.description" [innerHTML]="edu.description"></p>
                     </div>
                   </div>
                 </div>
@@ -533,7 +769,7 @@ import html2canvas from 'html2canvas';
                   <!-- Hobbies -->
                   <div *ngIf="cvForm.value.hobbies" class="cv-section mb-4">
                     <h4 class="section-title" [ngClass]="'text-' + selectedColor">Hobbies</h4>
-                    <p>{{ cvForm.value.hobbies }}</p>
+                    <div [innerHTML]="cvForm.value.hobbies"></div>
                   </div>
 
                   <!-- Información de Contacto -->
@@ -595,14 +831,92 @@ import html2canvas from 'html2canvas';
         padding-left: 15px;
       }
 
-      .cv-skill {
-        margin-bottom: 10px;
+      /* Editor WYSIWYG simple */
+      .editor-toolbar {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      .editor-toolbar .btn {
+        padding: 4px 6px;
+        font-size: 12px;
       }
 
-      .cv-contact-item {
-        display: flex;
-        align-items: center;
-        margin-bottom: 8px;
+      /* Ajustes para inputs/selects/textareas: usar color de fondo de la paleta y borde primario */
+      .form-control {
+        background-color: var(--color-bg) !important;
+        border: 1px solid var(--color-primary) !important;
+        box-shadow: none !important;
+        color: var(--color-text-1) !important;
+      }
+      .form-control:focus {
+        border-color: var(--color-primary) !important;
+        box-shadow: 0 0 0 0.06rem rgba(0, 0, 0, 0.03) !important;
+      }
+
+      /* Editor content: forzar LTR y alineación a la izquierda para evitar "texto al revés" y aplicar borde primario */
+      .editor-content,
+      .editor-content * {
+        /* Forzar dirección LTR en el editor y todos sus nodos hijos. */
+        direction: ltr !important;
+        text-align: left !important;
+        /* Usar isolate para evitar efectos BIDI sin activar comportamientos especiales */
+        unicode-bidi: isolate !important;
+      }
+
+      .editor-content {
+        min-height: 60px;
+        overflow: auto;
+        /* ligera translucidez para distinguir del fondo sin cambiar color */
+        background-color: rgba(255, 255, 255, 0.92) !important;
+        border: 1px solid var(--color-primary) !important;
+        border-radius: 4px;
+        padding: 8px 10px;
+        color: inherit;
+        caret-color: auto;
+      }
+
+      .preview-root .editor-content,
+      .preview-root .editor-content * {
+        direction: ltr !important;
+        text-align: left !important;
+        unicode-bidi: isolate !important;
+        background-color: rgba(255, 255, 255, 0.95) !important;
+        border: 1px solid var(--color-primary) !important;
+      }
+
+      /* Quitar relieve de los botones de la toolbar WYSIWYG */
+      .editor-toolbar .btn,
+      .editor-toolbar .btn *,
+      .editor-toolbar .btn::before,
+      .editor-toolbar .btn::after {
+        box-shadow: none !important;
+        -webkit-box-shadow: none !important;
+        border: none !important;
+        background-image: none !important;
+        outline: none !important;
+        transform: none !important;
+      }
+      .editor-toolbar .btn:hover,
+      .editor-toolbar .btn:active,
+      .editor-toolbar .btn:focus {
+        box-shadow: none !important;
+        -webkit-box-shadow: none !important;
+        transform: none !important;
+      }
+
+      /* Hacer las cajas de edición ligeramente traslúcidas para separarlas del fondo sin cambiar el color */
+      .editor-content {
+        background-color: rgba(255, 255, 255, 0.92); /* ligera opacidad sobre fondo */
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        border-radius: 4px;
+        padding: 8px 10px;
+        color: inherit;
+      }
+
+      /* Si el preview tiene fondo distinto, ajustar la transparencia para la vista previa fuera del formulario */
+      .preview-root .editor-content {
+        background-color: rgba(255, 255, 255, 0.95);
       }
 
       /* Colores dinámicos */
@@ -644,10 +958,77 @@ import html2canvas from 'html2canvas';
       .bg-primary .cv-item {
         border-left-color: white;
       }
+
+      /* Botones planos en la vista previa: quitar relieve (sombras, bordes, gradientes) */
+      .preview-root .btn {
+        box-shadow: none !important;
+        border: none !important;
+        background-image: none !important;
+        outline: none !important;
+        /* mantener algo de radio si se desea */
+        border-radius: 4px !important;
+      }
+      .preview-root .btn:focus,
+      .preview-root .btn:active,
+      .preview-root .btn:hover {
+        box-shadow: none !important;
+        transform: none !important;
+      }
+      .preview-root .btn-primary,
+      .preview-root .btn-secondary,
+      .preview_root .btn-danger,
+      .preview_root .btn-light,
+      .preview_root .btn-dark {
+        background-image: none !important;
+        box-shadow: none !important;
+        border: none !important;
+      }
+      /* Anular focus rings que añaden relieve en algunos navegadores */
+      .preview-root .btn:focus {
+        box-shadow: none !important;
+      }
+
+      /* Forzar botones totalmente planos dentro de la tarjeta de preview (incluye header y body) */
+      .cv-preview-card .btn,
+      .cv-preview-card .btn *,
+      .cv-preview-card .btn::before,
+      .cv-preview-card .btn::after {
+        box-shadow: none !important;
+        -webkit-box-shadow: none !important;
+        border: none !important;
+        background-image: none !important; /* quita degradados */
+        outline: none !important;
+        text-shadow: none !important;
+        filter: none !important;
+        -webkit-appearance: none !important;
+        appearance: none !important;
+      }
+
+      /* Asegurar que las variantes no reintroduzcan sombras o bordes */
+      .cv-preview-card .btn-primary,
+      .cv-preview-card .btn-secondary,
+      .cv-preview-card .btn-success,
+      .cv-preview-card .btn-danger,
+      .cv-preview-card .btn-light,
+      .cv-preview-card .btn-dark {
+        background-image: none !important;
+        box-shadow: none !important;
+        -webkit-box-shadow: none !important;
+        border: none !important;
+      }
+
+      /* También anular estilos en estados :hover/:active/:focus */
+      .cv-preview-card .btn:hover,
+      .cv-preview-card .btn:active,
+      .cv-preview-card .btn:focus {
+        box-shadow: none !important;
+        -webkit-box-shadow: none !important;
+        transform: none !important;
+      }
     `,
   ],
 })
-export class CvComponent implements OnInit {
+export class CvComponent implements OnInit, OnDestroy {
   @ViewChild('cvPreview') cvPreview!: ElementRef;
 
   cvForm: FormGroup;
@@ -656,12 +1037,83 @@ export class CvComponent implements OnInit {
   showPreview: boolean = false;
   selectedFile: File | null = null;
 
+  // Handler binding para poder remover el listener
+  private storageHandler = (e: StorageEvent) => {
+    if (e.key === 'active_palette') {
+      try {
+        const p = e.newValue ? JSON.parse(e.newValue) : null;
+        if (p) this.applyPaletteToRoot(p);
+      } catch (err) {
+        /* ignore */
+      }
+    }
+  };
+
   constructor(private fb: FormBuilder) {
     this.cvForm = this.createCvForm();
   }
 
   ngOnInit() {
     this.loadDraft();
+    // Aplicar paleta guardada si existe
+    this.applyPaletteFromLocalStorage();
+    // Escuchar cambios en localStorage iniciados por el componente Config
+    try {
+      window.addEventListener('storage', this.storageHandler, false);
+    } catch (e) {}
+
+    // Observar cambios en :root (estilos inline) para sincronizar con el preview
+    this.setupRootObserver();
+  }
+
+  ngOnDestroy() {
+    try {
+      window.removeEventListener('storage', this.storageHandler);
+    } catch (e) {}
+    try {
+      if (this.mutationObserver) this.mutationObserver.disconnect();
+    } catch (e) {}
+  }
+
+  // Observador para detectar cambios en document.documentElement.style y sincronizar preview
+  private mutationObserver?: MutationObserver;
+
+  private setupRootObserver() {
+    try {
+      const root = document.documentElement;
+      this.mutationObserver = new MutationObserver(() => {
+        this.applyRootVarsToPreview();
+      });
+      this.mutationObserver.observe(root, { attributes: true, attributeFilter: ['style'] });
+    } catch (e) {
+      // ignore non-browser contexts
+    }
+  }
+
+  private applyRootVarsToPreview() {
+    try {
+      // Encontrar el elemento preview-root dentro del componente (si renderizado)
+      const cardEl =
+        this.cvPreview && this.cvPreview.nativeElement ? this.cvPreview.nativeElement : null;
+      if (!cardEl) return;
+      const previewRoot: HTMLElement | null = cardEl.querySelector('.preview-root');
+      if (!previewRoot) return;
+
+      const rootStyles = getComputedStyle(document.documentElement);
+      const vars = [
+        '--color-primary',
+        '--color-secondary',
+        '--color-bg',
+        '--color-text-1',
+        '--color-text-2',
+      ];
+      vars.forEach((v) => {
+        const val = rootStyles.getPropertyValue(v).trim();
+        if (val) previewRoot.style.setProperty(v, val);
+      });
+    } catch (e) {
+      // ignore
+    }
   }
 
   // Getters para acceder a los FormArray desde la plantilla y desde el componente
@@ -696,23 +1148,33 @@ export class CvComponent implements OnInit {
   }
 
   private applyColorVariables() {
-    const defaults: { [key: string]: string } = {
-      primary: '#007bff',
-      secondary: '#6c757d',
-      bg: '#f8f9fa',
-      'text-1': '#212529',
-      'text-2': '#6c757d',
-    };
+    // Delegamos en la paleta persistida para mantener sincronía con el componente Config
+    this.applyPaletteFromLocalStorage();
+  }
 
-    // Mapear claves a variables CSS que usamos en estilos
-    const root = document.documentElement;
-    root.style.setProperty('--color-primary', defaults['primary']);
-    root.style.setProperty('--color-secondary', defaults['secondary']);
-    root.style.setProperty('--color-bg', defaults['bg']);
-    root.style.setProperty('--color-text-1', defaults['text-1']);
-    root.style.setProperty('--color-text-2', defaults['text-2']);
+  private applyPaletteFromLocalStorage() {
+    try {
+      const raw = localStorage.getItem('active_palette');
+      if (!raw) return;
+      const p = JSON.parse(raw);
+      this.applyPaletteToRoot(p);
+    } catch (e) {
+      // ignore
+    }
+  }
 
-    // Si se quiere potenciar la selección dinámica por clave, se puede ajustar aquí
+  private applyPaletteToRoot(p: any) {
+    if (!p) return;
+    try {
+      const root = document.documentElement;
+      if (p.primary) root.style.setProperty('--color-primary', p.primary);
+      if (p.secondary) root.style.setProperty('--color-secondary', p.secondary);
+      if (p.text1) root.style.setProperty('--color-text-1', p.text1);
+      if (p.text2) root.style.setProperty('--color-text-2', p.text2);
+      if (p.bg) root.style.setProperty('--color-bg', p.bg);
+    } catch (e) {
+      // ignore
+    }
   }
 
   // Manejo de archivo de foto
@@ -770,6 +1232,30 @@ export class CvComponent implements OnInit {
     });
   }
 
+  // Crear formulario principal del CV (faltaba en el archivo)
+  private createCvForm(): FormGroup {
+    return this.fb.group({
+      photo: [''],
+      firstName: ['', Validators.required],
+      lastName: ['', Validators.required],
+      desiredPosition: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      phone: ['', Validators.required],
+      address: ['', Validators.required],
+      postalCode: ['', Validators.required],
+      city: ['', Validators.required],
+      birthDate: [''],
+      birthPlace: [''],
+      linkedin: [''],
+      profile: [''],
+      education: this.fb.array([]),
+      experience: this.fb.array([]),
+      skills: this.fb.array([]),
+      languages: this.fb.array([]),
+      hobbies: [''],
+    });
+  }
+
   // Operaciones sobre arrays
   addEducation() {
     (this.cvForm.get('education') as FormArray).push(this.createEducationGroup());
@@ -812,6 +1298,8 @@ export class CvComponent implements OnInit {
     this.showPreview = true;
     // Aplicar colores (por si se cargó borrador)
     this.applyColorVariables();
+    // Forzar sincronización inmediata con variables de root
+    setTimeout(() => this.applyRootVarsToPreview(), 50);
   }
 
   // Obtener clase del CV según diseño seleccionado
@@ -997,44 +1485,148 @@ export class CvComponent implements OnInit {
 
   getLanguageLevelPercentage(level: string): number {
     const percentages: { [key: string]: number } = {
-      beginner: 20,
-      moderate: 40,
-      good: 60,
-      'very-good': 80,
+      beginner: 25,
+      moderate: 50,
+      good: 75,
+      'very-good': 90,
       fluent: 100,
-      A1: 17,
-      A2: 33,
-      B1: 50,
-      B2: 67,
-      C1: 83,
-      C2: 100,
+      A1: 10,
+      A2: 20,
+      B1: 30,
+      B2: 40,
+      C1: 50,
+      C2: 60,
     };
     return percentages[level] || 0;
   }
 
-  // Métodos existentes (se mantienen igual)
-  createCvForm(): FormGroup {
-    return this.fb.group({
-      photo: [''],
-      firstName: ['', Validators.required],
-      lastName: ['', Validators.required],
-      desiredPosition: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
-      phone: ['', Validators.required],
-      address: ['', Validators.required],
-      postalCode: ['', Validators.required],
-      city: ['', Validators.required],
-      birthDate: [''],
-      birthPlace: [''],
-      linkedin: [''],
-      profile: [''],
-      education: this.fb.array([]),
-      experience: this.fb.array([]),
-      skills: this.fb.array([]),
-      languages: this.fb.array([]),
-      hobbies: [''],
-    });
+  // Aplicar formato al contenido del editor (perfil, educación, experiencia, hobbies)
+  applyFormat(editor: string, command: string, value?: string) {
+    const editorEl = this.getEditorElement(editor);
+    if (!editorEl) return;
+
+    document.execCommand(command, false, value);
+    editorEl.focus();
+    this.saveSelection(editor);
   }
 
-  // ... (resto de métodos del formulario se mantienen igual)
+  // Aplicar formato a elementos dentro de un FormArray (educación, experiencia)
+  applyFormatArray(arrayName: string, index: number, command: string, value?: string) {
+    const editorEl = this.getEditorElement(arrayName, index);
+    if (!editorEl) return;
+
+    document.execCommand(command, false, value);
+    editorEl.focus();
+    this.saveSelection(arrayName, index);
+  }
+
+  // Guardar selección actual en el editor (para restaurar después)
+  private saveSelection(editor: string, index?: number) {
+    // Nota: serializar contenedores DOM es frágil; para este editor simple
+    // solo comprobamos que exista una selección y no intentamos persistir nodos.
+    try {
+      const sel = window.getSelection();
+      if (!sel || sel.rangeCount === 0) return;
+      // No persistimos la selección en storage para evitar serialización de nodos.
+      return;
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  // Restaurar selección en el editor
+  private restoreSelection(editor: string, index?: number) {
+    // Esta implementación es intencionalmente mínima: no intentamos restaurar
+    // selecciones complejas desde localStorage en este ejemplo.
+    try {
+      const sel = window.getSelection();
+      if (!sel) return;
+      // noop
+      return;
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  // Colocar el cursor (caret) al final del elemento contenteditable
+  private placeCaretAtEnd(el: HTMLElement) {
+    try {
+      el.focus();
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      range.collapse(false); // mover al final
+      const sel = window.getSelection();
+      if (sel) {
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  // Obtener elemento del editor (perfil, educación, experiencia, hobbies)
+  private getEditorElement(editor: string, index?: number): HTMLElement | null {
+    const selector =
+      index !== undefined ? `[data-editor="${editor}-${index}"]` : `[data-editor="${editor}"]`;
+    return document.querySelector(selector);
+  }
+
+  // Manejo de entrada en los editores (perfil, educación, experiencia, hobbies)
+  onEditorInput(editor: string, event: Event) {
+    const target = event.target as HTMLElement;
+    const content = target.innerHTML;
+
+    // Limpiar contenido vacío
+    if (!content.trim()) {
+      target.innerHTML = '';
+      return;
+    }
+
+    // Guardar cambios en el formulario
+    this.cvForm.get(editor)?.setValue(content);
+
+    // Sincronizar selección
+    this.saveSelection(editor);
+
+    // Asegurar que el caret quede al final para evitar que el siguiente caracter
+    // se inserte al inicio (problema de bidi/edición detectado).
+    this.placeCaretAtEnd(target);
+  }
+
+  onEditorInputArray(arrayName: string, index: number, event: Event) {
+    const target = event.target as HTMLElement;
+    const content = target.innerHTML;
+
+    // Limpiar contenido vacío
+    if (!content.trim()) {
+      target.innerHTML = '';
+      return;
+    }
+
+    // Guardar cambios en el formulario
+    const control = (this.cvForm.get(arrayName) as FormArray).at(index);
+    control.get('description')?.setValue(content);
+
+    // Sincronizar selección
+    this.saveSelection(arrayName, index);
+
+    // Forzar caret al final en el editor específico
+    this.placeCaretAtEnd(target);
+  }
+
+  // Crear enlace simple en el editor
+  createLink(editor: string, index?: number) {
+    const url = prompt('URL del enlace (incluya http://)');
+    if (!url) return;
+    const selector = index !== undefined ? `${editor}-${index}` : editor;
+    const el = this.getEditorElement(selector, undefined);
+    if (!el) return;
+    document.execCommand('createLink', false, url);
+    const ev = new Event('input', { bubbles: true });
+    el.dispatchEvent(ev);
+
+    // Mover caret al final después de crear el enlace
+    this.placeCaretAtEnd(el);
+  }
 }
