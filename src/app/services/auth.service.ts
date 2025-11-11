@@ -1,53 +1,51 @@
 // src/app/services/auth.service.ts
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, throwError } from 'rxjs';
-import { tap, map, catchError } from 'rxjs/operators';
-import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
+import { map, tap, delay } from 'rxjs/operators';
 import { User } from '../models/user.model';
-import { environment } from '../../environments/environment';
+import db from '../../../db.json'; // importa tu db.json directamente (requiere setup de Vite para json)
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private api = environment.apiBase;
-  private userSubject = new BehaviorSubject<User | null>(this.loadUser());
-  public user$ = this.userSubject.asObservable();
+  private userSubject: BehaviorSubject<User | null>;
+  public user$: Observable<User | null>;
 
-  constructor(private http: HttpClient) {}
+  constructor() {
+    // Inicializamos userSubject solo si estamos en el navegador
+    const savedUser = typeof localStorage !== 'undefined' 
+      ? JSON.parse(localStorage.getItem('auth_user') || 'null') 
+      : null;
 
-  private loadUser(): User | null {
-    const raw = localStorage.getItem('auth_user');
-    return raw ? (JSON.parse(raw) as User) : null;
+    this.userSubject = new BehaviorSubject<User | null>(savedUser);
+    this.user$ = this.userSubject.asObservable();
   }
 
   private saveUser(user: User | null) {
-    if (user) localStorage.setItem('auth_user', JSON.stringify(user));
-    else localStorage.removeItem('auth_user');
+    if (typeof localStorage !== 'undefined') {
+      if (user) localStorage.setItem('auth_user', JSON.stringify(user));
+      else localStorage.removeItem('auth_user');
+    }
     this.userSubject.next(user);
   }
 
-  /**
-   * Intenta loguear con username/password contra json-server: GET /users?username=...&password=...
-   * Devuelve Observable<User> que emite el usuario logueado y lo guarda en localStorage.
-   */
   login(username: string, password: string): Observable<User> {
-    const url = `${this.api}/users?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`;
+    // buscamos en db.json
+    const users: User[] = (db as any).users || [];
+    const user = users.find(u => u.username === username && u.password === password);
 
-    return this.http.get<User[]>(url).pipe(
-      map(users => {
-        if (!users || users.length === 0) {
-          throw new Error('Credenciales incorrectas');
-        }
-        const u = users[0];
-        // construir usuario sin password
-        return { id: u.id, username: u.username, name: u.name, role: u.role } as User;
-      }),
-      tap(user => this.saveUser(user)), // side-effect: guarda usuario
-      catchError(err => {
-        const message = err?.message ?? 'Error de red';
-        return throwError(() => new Error(message));
-      })
+    if (!user) {
+      return throwError(() => new Error('Credenciales incorrectas'));
+    }
+
+    // eliminamos password antes de guardar
+    const safeUser: User = { id: user.id, username: user.username, name: user.name, role: user.role };
+    
+    // simulamos delay como si fuera backend
+    return of(safeUser).pipe(
+      delay(500),
+      tap(u => this.saveUser(u))
     );
   }
 

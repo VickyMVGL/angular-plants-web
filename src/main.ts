@@ -1,29 +1,24 @@
 // src/main.ts
 import { bootstrapApplication } from '@angular/platform-browser';
-import { provideHttpClient } from '@angular/common/http';
-import { appConfig } from './app/app.config';
 import { App } from './app/app';
+import { appConfig } from './app/app.config';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
-/* --- restoreSavedTheme (mantén exactamente tu bloque actual) --- */
+/* --- restoreSavedTheme (mantén tu bloque actual) --- */
 (function restoreSavedTheme() {
   /* ... tu lógica actual ... */
 })();
 
 /* --- construir providers correctamente --- */
-// Normaliza providers existentes (si appConfig.providers es un array lo usamos, si no usamos [])
 const existingProviders = Array.isArray((appConfig as any)?.providers)
   ? (appConfig as any).providers
   : [];
 
-// Añadimos provideHttpClient() para registrar HttpClient en el injector raíz
-const mergedProviders = [
-  ...existingProviders,
-  provideHttpClient()
-];
-
-const mergedConfig = {
+// bootstrap de la app con HttpClient moderno
+bootstrapApplication(App, {
   ...(appConfig || {}),
-  providers: mergedProviders
-};
-
-bootstrapApplication(App, mergedConfig).catch((err) => console.error(err));
+  providers: [
+    provideHttpClient(withInterceptorsFromDi()), // Angular 20: registra HttpClient sin HttpClientModule
+    ...existingProviders
+  ]
+}).catch((err) => console.error(err));

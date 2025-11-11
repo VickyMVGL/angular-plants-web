@@ -2,14 +2,13 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'page-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, HttpClientModule],
+  imports: [CommonModule, FormsModule], // <-- Quitar HttpClientModule
   template: `
     <div class="login-container">
       <h2>Iniciar sesión</h2>
@@ -69,7 +68,7 @@ export class Login {
     this.auth.login(this.username, this.password).subscribe({
       next: () => {
         this.loading = false;
-        this.router.navigateByUrl('/home'); // mejor navegar a /home en vez de '/'
+        this.router.navigateByUrl('/home'); // navega a /home
       },
       error: (err) => {
         this.loading = false;
