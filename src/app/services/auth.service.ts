@@ -1,8 +1,9 @@
+// src/app/services/auth.service.ts
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, throwError } from 'rxjs';
+import { tap, map, catchError } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
 import { User } from '../models/user.model';
-import { map, catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -17,7 +18,7 @@ export class AuthService {
 
   private loadUser(): User | null {
     const raw = localStorage.getItem('auth_user');
-    return raw ? JSON.parse(raw) as User : null;
+    return raw ? (JSON.parse(raw) as User) : null;
   }
 
   private saveUser(user: User | null) {
@@ -26,28 +27,31 @@ export class AuthService {
     this.userSubject.next(user);
   }
 
+  /**
+   * Intenta loguear con username/password contra json-server: GET /users?username=...&password=...
+   * Devuelve Observable<User> que emite el usuario logueado y lo guarda en localStorage.
+   */
   login(username: string, password: string): Observable<User> {
     const url = `${this.api}/users?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`;
+
     return this.http.get<User[]>(url).pipe(
       map(users => {
         if (!users || users.length === 0) {
           throw new Error('Credenciales incorrectas');
         }
         const u = users[0];
-        // Remove password when saving/exposing
-        const user: User = { id: u.id, username: u.username, name: u.name, role: u.role };
-        this.saveUser(user);
-        return user;
+        // construir usuario sin password
+        return { id: u.id, username: u.username, name: u.name, role: u.role } as User;
       }),
+      tap(user => this.saveUser(user)), // side-effect: guarda usuario
       catchError(err => {
-        // Normaliza error
-        const message = (err?.message) ? err.message : 'Error de red';
+        const message = err?.message ?? 'Error de red';
         return throwError(() => new Error(message));
       })
     );
   }
 
-  logout() {
+  logout(): void {
     this.saveUser(null);
   }
 
