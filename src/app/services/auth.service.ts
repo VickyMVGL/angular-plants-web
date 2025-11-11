@@ -1,4 +1,3 @@
-// src/app/services/auth.service.ts
 import { Injectable, signal, computed } from '@angular/core';
 
 export interface User {
@@ -23,17 +22,26 @@ export class AuthService {
   public isLoggedIn = computed(() => this.currentUser().isLoggedIn);
   public isAdmin = computed(() => this.currentUser().role === 'admin');
 
+  constructor() {
+    // ✅ Inicializa el usuario si hay datos guardados
+    this.initializeAuth();
+  }
+
   login(username: string, password: string, role: 'admin' | 'user' = 'user'): boolean {
-    // Tu lógica de autenticación aquí
     const user: User = {
       id: 1,
-      username: username,
-      role: role,
+      username,
+      role,
       isLoggedIn: true
     };
     
     this.currentUserSignal.set(user);
-    localStorage.setItem('currentUser', JSON.stringify(user));
+
+    // ✅ Guardar solo si estamos en navegador
+    if (typeof window !== 'undefined' && window.localStorage) {
+      localStorage.setItem('currentUser', JSON.stringify(user));
+    }
+
     return true;
   }
 
@@ -46,13 +54,23 @@ export class AuthService {
     };
     
     this.currentUserSignal.set(user);
-    localStorage.removeItem('currentUser');
+
+    if (typeof window !== 'undefined' && window.localStorage) {
+      localStorage.removeItem('currentUser');
+    }
   }
 
   initializeAuth(): void {
-    const savedUser = localStorage.getItem('currentUser');
-    if (savedUser) {
-      this.currentUserSignal.set(JSON.parse(savedUser));
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const savedUser = localStorage.getItem('currentUser');
+      if (savedUser) {
+        try {
+          const parsed = JSON.parse(savedUser);
+          this.currentUserSignal.set(parsed);
+        } catch {
+          console.warn('Error al parsear el usuario guardado.');
+        }
+      }
     }
   }
 }
