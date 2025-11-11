@@ -7,7 +7,13 @@ import { Header } from './header/header';
 @Component({
   selector: 'page-root',
   standalone: true,
-  imports: [RouterOutlet, RouterModule, Navbar, Footer],
+  imports: [
+    RouterOutlet,
+    RouterModule,
+    Navbar,
+    Footer,
+    Header
+  ], // <-- HttpClientModule eliminado
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   template: `
     <div class="app-container">
