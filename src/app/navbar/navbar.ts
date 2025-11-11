@@ -1,6 +1,9 @@
-import { Component } from '@angular/core';
+// src/app/navbar/navbar.ts
+import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
+import { AuthService } from '../services/auth.service';
+import { User } from '../models/user.model';
 
 @Component({
   selector: 'app-navbar',
@@ -15,141 +18,112 @@ import { RouterModule, Router } from '@angular/router';
           </h1>
         </a>
 
-        <!-- burger button para móvil -->
-        <button
-          class="navbar-toggler"
-          type="button"
-          (click)="toggleMenu()"
-          aria-label="Toggle navigation"
-        >
+        <button class="navbar-toggler" type="button" (click)="toggleMenu()" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
 
-        <!-- nav (controlamos la clase 'show' con menuOpen) -->
-        <div class="collapse navbar-collapse" [class.show]="menuOpen" id="navbarCollapse">
+        <div class="collapse navbar-collapse" [class.show]="menuOpen()">
           <div class="navbar-nav mr-auto py-0">
-            <a
-              routerLink="/"
-              routerLinkActive="active"
-              [routerLinkActiveOptions]="{ exact: true }"
-              class="nav-item nav-link"
-              (click)="onNavClick()"
-              >Home</a
-            >
-
-            <a
-              routerLink="/about"
-              routerLinkActive="active"
-              class="nav-item nav-link"
-              (click)="onNavClick()"
-              >About</a
-            >
-
-            <a
-              routerLink="/services"
-              routerLinkActive="active"
-              class="nav-item nav-link"
-              (click)="onNavClick()"
-              >Service</a
-            >
-
-            <a
-              routerLink="/price"
-              routerLinkActive="active"
-              class="nav-item nav-link"
-              (click)="onNavClick()"
-              >Price</a
-            >
-
-            <a
-              routerLink="/booking"
-              routerLinkActive="active"
-              class="nav-item nav-link"
-              (click)="onNavClick()"
-              >Booking</a
-            >
-
-            <a
-              routerLink="/cv"
-              routerLinkActive="active"
-              class="nav-item nav-link"
-              (click)="onCvClick($event)"
-              >Curriculum</a
-            >
+            <a routerLink="/" routerLinkActive="active" class="nav-item nav-link" (click)="onNavClick()">Home</a>
+            <a routerLink="/about" routerLinkActive="active" class="nav-item nav-link" (click)="onNavClick()">About</a>
+            <a routerLink="/services" routerLinkActive="active" class="nav-item nav-link" (click)="onNavClick()">Service</a>
+            <a routerLink="/price" routerLinkActive="active" class="nav-item nav-link" (click)="onNavClick()">Price</a>
+            <a routerLink="/booking" routerLinkActive="active" class="nav-item nav-link" (click)="onNavClick()">Booking</a>
           </div>
 
-          <a
-            routerLink="/login"
-            class="btn btn-lg btn-secondary px-3 d-none d-lg-block"
-            (click)="closeMenu()"
-            >Log In</a
-          >
+          <!-- Login / Usuario -->
+          <div class="d-none d-lg-block">
+            <!-- Botón Log In si no hay usuario -->
+            <button *ngIf="!userSignal()" class="btn btn-lg btn-secondary px-3" (click)="goLogin()">
+              Log In
+            </button>
+
+            <!-- Usuario logueado -->
+            <div *ngIf="userSignal()" class="btn-group">
+              <button class="btn btn-lg btn-success dropdown-toggle" type="button" (click)="toggleDropdown($event)">
+                {{ userSignal()?.name }}
+              </button>
+
+              <ul class="dropdown-menu dropdown-menu-end" [class.show]="dropdownOpen()">
+                <!-- Opciones admin -->
+                <li *ngIf="userSignal()?.role === 'admin'">
+                  <a class="dropdown-item" routerLink="/ver-cv" (click)="closeMenu()">Ver CV</a>
+                </li>
+                <li *ngIf="userSignal()?.role === 'admin'">
+                  <a class="dropdown-item" routerLink="/paleta-colores" (click)="closeMenu()">Paleta de colores</a>
+                </li>
+
+                <!-- Opciones user -->
+                <li *ngIf="userSignal()?.role === 'user'">
+                  <a class="dropdown-item" routerLink="/crear-cv" (click)="closeMenu()">Crear CV</a>
+                </li>
+
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                  <button class="dropdown-item" (click)="logout()">Cerrar sesión</button>
+                </li>
+              </ul>
+            </div>
+          </div>
         </div>
       </nav>
     </div>
   `,
   styles: [
     `
-      :host {
-        display: block;
-      }
-      /* Mantengo estilos mínimos; usa tus clases globales o Bootstrap */
+      :host { display: block; }
       .navbar-nav .nav-link.active {
         color: #fff;
         background: rgba(255, 255, 255, 0.06);
         border-radius: 4px;
       }
-      .dropdown-menu {
-        position: absolute;
-      }
+      .dropdown-menu { position: absolute; }
       @media (max-width: 991px) {
-        .dropdown-menu {
-          position: static;
-        }
+        .dropdown-menu { position: static; }
       }
     `,
   ],
 })
 export class Navbar {
-  menuOpen = false;
-  dropdownOpen = false;
+  menuOpen = signal(false);
+  dropdownOpen = signal(false);
+  userSignal = signal<User | null>(null);
 
-  // inject Router to navigate programmatically and capture errors
-  constructor(private router: Router) {}
-
-  toggleMenu(): void {
-    this.menuOpen = !this.menuOpen;
-    // cerrar dropdown si cerramos el menu
-    if (!this.menuOpen) this.dropdownOpen = false;
+  constructor(private auth: AuthService, private router: Router) {
+    // Suscribirse al user$ y actualizar el signal
+    this.auth.user$.subscribe(user => {
+      console.log('Navbar: usuario actualizado', user);
+      this.userSignal.set(user);
+    });
   }
 
-  closeMenu(): void {
-    this.menuOpen = false;
-    this.dropdownOpen = false;
+  toggleMenu() { 
+    this.menuOpen.set(!this.menuOpen()); 
+    if (!this.menuOpen()) this.dropdownOpen.set(false); 
   }
 
-  onNavClick(): void {
-    // cuando el usuario hace click en un link, cerramos el menú (móvil)
+  closeMenu() { 
+    this.menuOpen.set(false); 
+    this.dropdownOpen.set(false); 
+  }
+
+  onNavClick() { 
+    this.closeMenu(); 
+  }
+
+  toggleDropdown(event: Event) {
+    event.preventDefault();
+    this.dropdownOpen.set(!this.dropdownOpen());
+  }
+
+  goLogin() {
+    this.router.navigateByUrl('/login');
     this.closeMenu();
   }
 
-  // new: specific logger for CV link to help debug navigation not firing
-  onCvClick(event: Event): void {
-    // prevent default full-page navigation in case the anchor tries to reload the page
-    event.preventDefault();
-    console.log('[Navbar] CV link clicked', event);
-    // close mobile menu first
-    this.onNavClick();
-    // navigate programmatically and log result / errors for debugging
-    this.router
-      .navigateByUrl('/cv')
-      .then((ok) => console.log('[Navbar] navigateByUrl /cv result:', ok))
-      .catch((err) => console.error('[Navbar] navigateByUrl /cv error:', err));
-  }
-
-  toggleDropdown(event: Event): void {
-    // prevenir navegación inesperada y togglear manualmente
-    event.preventDefault();
-    this.dropdownOpen = !this.dropdownOpen;
+  logout() {
+    this.auth.logout();
+    this.closeMenu();
+    this.router.navigateByUrl('/');
   }
 }
