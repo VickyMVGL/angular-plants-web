@@ -40,15 +40,9 @@ export const routes: Routes = [
   {
     path: 'config',
     loadComponent: () => import('./pages/config/config').then((m) => m.ConfigPage),
-    canActivate: [AuthGuard, AdminGuard],  // Ejemplo: solo para admins
   },
   {
-    path: '',
-    redirectTo: '/login',
-    pathMatch: 'full'
+    path: 'cv',
+    loadComponent: () => import('./pages/cv/cv').then((m) => m.CvComponent),
   },
-  {
-    path: '**',
-    redirectTo: '/login'  // O a una página 404 si la tienes
-  }
 ];

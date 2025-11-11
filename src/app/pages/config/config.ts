@@ -15,18 +15,16 @@ import { CommonModule } from '@angular/common';
 
       /* CSS variables defaults (scoped to preview) */
       .preview-root {
-        --color-primary: #ed6436;
-        --color-secondary: #6c757d;
-        --color-text-1: #212529;
-        --color-text-2: #6c757d;
-        --color-bg: #f8f9fa;
-
-        --title-font: 'Nunito', sans-serif;
-        --text-font: 'Nunito Sans', sans-serif;
-
-        --title-size: 40px; /* px */
-        --subtitle-size: 20px; /* px */
-        --text-size: 16px; /* px */
+        --color-primary: var(--color-primary);
+        --color-secondary: var(--color-secondary);
+        --color-text-1: var(--color-text-1);
+        --color-text-2: var(--color-text-2);
+        --color-bg: var(--color-bg);
+        --title-font: var(--title-font);
+        --text-font: var(--text-font);
+        --title-size: var(--title-size);
+        --subtitle-size: var(--subtitle-size);
+        --text-size: var(--text-size);
       }
 
       /* Sidebar - unchanged and outside preview */
@@ -627,7 +625,7 @@ import { CommonModule } from '@angular/common';
                   </div>
                 </div>
               </div>
-              <a class="btn btn-lg btn-primary px-3 d-none d-lg-block">Log In</a>
+              <a class="btn btn-lg btn-secondary px-3 d-none d-lg-block">Log In</a>
             </div>
           </nav>
         </div>
@@ -912,55 +910,45 @@ export class ConfigPage implements AfterViewInit, OnDestroy {
     } catch (e) {
       /* ignore in non-browser contexts */
     }
+
+    // Persist active palette so it survives page reload
+    try {
+      localStorage.setItem('active_palette', JSON.stringify(p));
+    } catch (e) {
+      /* ignore storage errors */
+    }
   }
 
   private applyTypographyToElement(el: HTMLElement | null, t: any) {
-    if (!el) return;
-    const style = el.style;
-    if (t.titleFont) style.setProperty('--title-font', t.titleFont);
-    if (t.textFont) style.setProperty('--text-font', t.textFont);
-
-    if (t.titleSize !== undefined && t.titleSize !== null) {
-      if (typeof t.titleSize === 'number' || /^[0-9]+$/.test(String(t.titleSize)))
-        style.setProperty('--title-size', String(t.titleSize) + 'px');
-      else style.setProperty('--title-size', t.titleSize);
-    }
-    if (t.subtitleSize !== undefined && t.subtitleSize !== null) {
-      if (typeof t.subtitleSize === 'number' || /^[0-9]+$/.test(String(t.subtitleSize)))
-        style.setProperty('--subtitle-size', String(t.subtitleSize) + 'px');
-      else style.setProperty('--subtitle-size', t.subtitleSize);
-    }
-    if (t.textSize !== undefined && t.textSize !== null) {
-      if (typeof t.textSize === 'number' || /^[0-9]+$/.test(String(t.textSize)))
-        style.setProperty('--text-size', String(t.textSize) + 'px');
-      else style.setProperty('--text-size', t.textSize);
-    }
-
-    // Also apply typography to :root so other pages inherit changes
+    if (!el || !t) return;
     try {
-      const rootStyle =
-        (document && document.documentElement && document.documentElement.style) || null;
-      if (rootStyle) {
-        if (t.titleFont) rootStyle.setProperty('--title-font', t.titleFont);
-        if (t.textFont) rootStyle.setProperty('--text-font', t.textFont);
-        if (t.titleSize !== undefined && t.titleSize !== null) {
-          if (typeof t.titleSize === 'number' || /^[0-9]+$/.test(String(t.titleSize)))
-            rootStyle.setProperty('--title-size', String(t.titleSize) + 'px');
-          else rootStyle.setProperty('--title-size', t.titleSize);
-        }
-        if (t.subtitleSize !== undefined && t.subtitleSize !== null) {
-          if (typeof t.subtitleSize === 'number' || /^[0-9]+$/.test(String(t.subtitleSize)))
-            rootStyle.setProperty('--subtitle-size', String(t.subtitleSize) + 'px');
-          else rootStyle.setProperty('--subtitle-size', t.subtitleSize);
-        }
-        if (t.textSize !== undefined && t.textSize !== null) {
-          if (typeof t.textSize === 'number' || /^[0-9]+$/.test(String(t.textSize)))
-            rootStyle.setProperty('--text-size', String(t.textSize) + 'px');
-          else rootStyle.setProperty('--text-size', t.textSize);
-        }
+      const style = el.style;
+      if (t.titleFont) style.setProperty('--title-font', t.titleFont);
+      if (t.textFont) style.setProperty('--text-font', t.textFont);
+      if (t.titleSize !== undefined && t.titleSize !== null) {
+        if (typeof t.titleSize === 'number' || /^[0-9]+$/.test(String(t.titleSize)))
+          style.setProperty('--title-size', String(t.titleSize) + 'px');
+        else style.setProperty('--title-size', t.titleSize);
+      }
+      if (t.subtitleSize !== undefined && t.subtitleSize !== null) {
+        if (typeof t.subtitleSize === 'number' || /^[0-9]+$/.test(String(t.subtitleSize)))
+          style.setProperty('--subtitle-size', String(t.subtitleSize) + 'px');
+        else style.setProperty('--subtitle-size', t.subtitleSize);
+      }
+      if (t.textSize !== undefined && t.textSize !== null) {
+        if (typeof t.textSize === 'number' || /^[0-9]+$/.test(String(t.textSize)))
+          style.setProperty('--text-size', String(t.textSize) + 'px');
+        else style.setProperty('--text-size', t.textSize);
       }
     } catch (e) {
       /* ignore in non-browser contexts */
+    }
+
+    // Also persist active typography
+    try {
+      localStorage.setItem('active_typography', JSON.stringify(t));
+    } catch (e) {
+      /* ignore storage errors */
     }
   }
 
@@ -1264,42 +1252,67 @@ export class ConfigPage implements AfterViewInit, OnDestroy {
             return;
           }
           const family = 'UploadedFont_' + Date.now();
-          const url = URL.createObjectURL(file);
-          const style = document.createElement('style');
           const fmt = name.endsWith('.otf') ? 'opentype' : 'truetype';
-          style.innerHTML = `
-          @font-face {
-            font-family: "${family}";
-            src: url("${url}") format("${fmt}");
-            font-weight: normal;
-            font-style: normal;
-            font-display: swap;
-          }
-        `;
-          document.head.appendChild(style);
 
-          const addOption = (select: HTMLSelectElement, familyName: string, label?: string) => {
-            const opt = document.createElement('option');
-            opt.value = familyName;
-            opt.text = label || familyName;
-            select.appendChild(opt);
+          // Read file as DataURL so we can persist it in localStorage and restore after reload
+          const reader = new FileReader();
+          reader.onload = () => {
+            const dataUrl = String(reader.result || '');
+            // inject @font-face now
+            const style = document.createElement('style');
+            style.innerHTML = `
+                @font-face {
+                  font-family: "${family}";
+                  src: url("${dataUrl}") format("${fmt}");
+                  font-weight: normal;
+                  font-style: normal;
+                  font-display: swap;
+                }
+              `;
+            document.head.appendChild(style);
+
+            // add option to selects
+            const addOption = (
+              select: HTMLSelectElement | null,
+              familyName: string,
+              label?: string
+            ) => {
+              if (!select) return;
+              const opt = document.createElement('option');
+              opt.value = familyName;
+              opt.text = label || familyName;
+              select.appendChild(opt);
+            };
+            const titleMain = root.querySelector('#title-font') as HTMLSelectElement;
+            const textMain = root.querySelector('#text-font') as HTMLSelectElement;
+            if (titleMain) addOption(titleMain, family, file.name + ' (uploaded)');
+            if (textMain) addOption(textMain, family, file.name + ' (uploaded)');
+
+            if (titleMain) titleMain.value = family;
+            if (textMain) textMain.value = family;
+
+            this.applyTypographyToElement(previewRoot, {
+              titleFont: `"${family}", sans-serif`,
+              textFont: `"${family}", sans-serif`,
+              titleSize: Number(titleSize?.value) || 40,
+              subtitleSize: Number(subtitleSize?.value) || 20,
+              textSize: Number(textSize?.value) || 16,
+            });
+
+            // persist uploaded font in localStorage so it survives reload
+            try {
+              const uploadedRaw = localStorage.getItem('uploaded_fonts');
+              const arr = uploadedRaw ? JSON.parse(uploadedRaw) : [];
+              arr.push({ family, dataUrl, fmt, name: file.name });
+              localStorage.setItem('uploaded_fonts', JSON.stringify(arr));
+            } catch (e) {
+              /* ignore storage errors */
+            }
+
+            this.showToast('Fuente subida y añadida a las opciones', 'info');
+            fontUploadInput.value = '';
           };
-          if (titleFont) addOption(titleFont, family, file.name + ' (uploaded)');
-          if (textFont) addOption(textFont, family, file.name + ' (uploaded)');
-
-          if (titleFont) titleFont.value = family;
-          if (textFont) textFont.value = family;
-
-          this.applyTypographyToElement(previewRoot, {
-            titleFont: `"${family}", sans-serif`,
-            textFont: `"${family}", sans-serif`,
-            titleSize: Number(titleSize?.value) || 40,
-            subtitleSize: Number(subtitleSize?.value) || 20,
-            textSize: Number(textSize?.value) || 16,
-          });
-
-          this.showToast('Fuente subida y añadida a las opciones', 'info');
-          fontUploadInput.value = '';
+          reader.readAsDataURL(file);
         })
       );
     }
@@ -1797,7 +1810,7 @@ export class ConfigPage implements AfterViewInit, OnDestroy {
 
   /* -------------------------
      Edit panel implementation (creates dynamic form contents)
-     ------------------------- */
+         ------------------------- */
   private openEditPanel(type: string, index: number, onSave: (updated: any) => void) {
     const ui = (this as any)._ui;
     if (!ui) return;
@@ -2076,6 +2089,32 @@ export class ConfigPage implements AfterViewInit, OnDestroy {
     const ui = (this as any)._ui;
     if (!ui) return;
     const { root, previewRoot } = ui as any;
+
+    // Restore persisted active palette / typography (if any)
+    try {
+      if (previewRoot && typeof localStorage !== 'undefined') {
+        const savedPal = localStorage.getItem('active_palette');
+        if (savedPal) {
+          try {
+            const pal = JSON.parse(savedPal);
+            this.applyPaletteToElement(previewRoot, pal);
+          } catch (e) {
+            /* invalid JSON, ignore */
+          }
+        }
+        const savedTypo = localStorage.getItem('active_typography');
+        if (savedTypo) {
+          try {
+            const ty = JSON.parse(savedTypo);
+            this.applyTypographyToElement(previewRoot, ty);
+          } catch (e) {
+            /* invalid JSON, ignore */
+          }
+        }
+      }
+    } catch (e) {
+      /* ignore in non-browser contexts */
+    }
 
     const primaryPicker = root.querySelector('#primary-picker') as HTMLInputElement;
     const secondaryPicker = root.querySelector('#secondary-picker') as HTMLInputElement;
