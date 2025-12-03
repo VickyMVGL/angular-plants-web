@@ -66,6 +66,6 @@ import { Component } from '@angular/core';
       </div>
     </div>
   `,
-  styleUrl: './booking.css',
+  styleUrl: '../../../styles.css',
 })
 export class Booking {}

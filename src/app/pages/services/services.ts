@@ -10,7 +10,7 @@ import { Services } from '../../components/services/services';
     <page-testimonial></page-testimonial>
 
   `,
-  styleUrl: './services.css'
+  styleUrl: '../../../styles.css',
 })
 export class ServicesPage {
 

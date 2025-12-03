@@ -25,6 +25,6 @@ import { CommonModule } from '@angular/common';
       </div>
     </div>
   `,
-  styleUrl: './services.css',
+  styleUrl: '../../../styles.css',
 })
 export class Services {}

@@ -55,6 +55,6 @@ import { Component } from '@angular/core';
       </div>
     </section>
   `,
-  styleUrl: './about.css',
+  styleUrl: '../../../styles.css',
 })
 export class About {}

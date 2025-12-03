@@ -63,7 +63,7 @@ import { Component } from '@angular/core';
     </div>
 
   `,
-  styleUrl: './footer.css'
+  styleUrl: '../../styles.css',
 })
 export class Footer {
 

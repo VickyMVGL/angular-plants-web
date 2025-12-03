@@ -43,6 +43,6 @@ import { Component } from '@angular/core';
       </div>
     </div>
   `,
-  styleUrl: './features.css',
+  styleUrl: '../../../styles.css',
 })
 export class Features {}

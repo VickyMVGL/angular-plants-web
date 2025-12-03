@@ -53,7 +53,7 @@ declare var $: any; // Si estás usando jQuery
       </div>
     </div>
   `,
-  styleUrl: './carousel.css',
+  styleUrl: '../../../styles.css',
 })
 export class Carousel implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit() {

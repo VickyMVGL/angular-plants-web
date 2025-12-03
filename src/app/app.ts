@@ -13,7 +13,7 @@ import { Header } from './header/header';
     Navbar,
     Footer,
     Header
-  ], // <-- HttpClientModule eliminado
+  ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   template: `
     <div class="app-container">
@@ -32,8 +32,7 @@ import { Header } from './header/header';
         <app-footer></app-footer>
       </footer>
     </div>
-  `,
-  styleUrls: ['../styles.css'],
+  `
 })
 export class App {
   protected readonly title = signal('angular-plants-web');

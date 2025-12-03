@@ -30,6 +30,6 @@ import { CommonModule } from '@angular/common';
       </div>
     </div>
   `,
-  styleUrls: ['./blog.css'],
+  styleUrls: ['../../../styles.css'],
 })
 export class Blog {}

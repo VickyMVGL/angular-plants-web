@@ -51,6 +51,6 @@ import { CommonModule } from '@angular/common';
       </div>
     </div>
   `,
-  styleUrl: './team.css',
+  styleUrl: '../../../styles.css',
 })
 export class Team {}

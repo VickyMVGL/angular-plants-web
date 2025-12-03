@@ -13,7 +13,7 @@ import { Team } from '../../components/team/team';
     <page-features></page-features>
     <page-team></page-team>
   `,
-  styleUrl: './about.css'
+  styleUrl: '../../../styles.css',
 })
 export class AboutPage {
 

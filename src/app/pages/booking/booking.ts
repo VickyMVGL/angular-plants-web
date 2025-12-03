@@ -12,7 +12,7 @@ import { Pricing } from '../../components/pricing/pricing';
     <page-booking></page-booking>
     <page-pricing></page-pricing>
   `,
-  styleUrl: './booking.css'
+  styleUrl: '../../../styles.css',
 })
 export class BookingPage {
 

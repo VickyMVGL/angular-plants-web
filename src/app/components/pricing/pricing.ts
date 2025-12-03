@@ -129,6 +129,6 @@ import { Component } from '@angular/core';
       </div>
     </div>
   `,
-  styleUrl: './pricing.css',
+  styleUrl: '../../../styles.css',
 })
 export class Pricing {}
