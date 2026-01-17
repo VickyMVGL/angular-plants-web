@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tangram - Piezas Agrandadas</title>
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        background-color: #f0f2f5;
+        font-family: sans-serif;
+      }
+      canvas {
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      h2 {
+        color: #333;
+        margin-bottom: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Tanagrama 3 - FIgura 28</h2>
+    <canvas id="miCanvas" width="600" height="500"></canvas>
+
+    <script>
+      const canvas = document.getElementById('miCanvas');
+      const ctx = canvas.getContext('2d');
+
+      // Configuración de la cuadrícula
+      const escala = 80;
+      const offsetX = 100;
+      const offsetY = 50;
+
+      // Tamaño original (para referencia)
+      const s = Math.sqrt(2) / 2; // ~0.707
+
+      // NUEVO TAMAÑO para el grupo inferior (Rosa, Verde, Naranja)
+      // Lo aumentamos a 1.0 para que se vean más grandes
+      const sBig = 1.0;
+
+      // Función para dibujar cualquier polígono
+      function dibujarFigura(puntos, color) {
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.moveTo(offsetX + puntos[0][0] * escala, offsetY + puntos[0][1] * escala);
+
+        for (let i = 1; i < puntos.length; i++) {
+          ctx.lineTo(offsetX + puntos[i][0] * escala, offsetY + puntos[i][1] * escala);
+        }
+
+        ctx.closePath();
+        ctx.fill();
+
+        // Borde blanco
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+      }
+
+      // --- ENSAMBLAJE DE LAS 7 PIEZAS ---
+
+      // 1. Triángulo Mediano (Pequeño) - Amarillo Oro
+      dibujarFigura(
+        [
+          [0, 2],
+          [1, 2],
+          [0, 3],
+        ],
+        '#F4D03F'
+      );
+
+      // 2. Paralelepípedo (Rojo)
+      dibujarFigura(
+        [
+          [1, 1],
+          [2, 1],
+          [1, 2],
+          [0, 2],
+        ],
+        '#FF6B6B'
+      );
+
+      // 3. Triángulo Grande 1 (Cuerpo Izquierdo) - Azul Rey
+      dibujarFigura(
+        [
+          [0, 3],
+          [2, 3],
+          [2, 1],
+        ],
+        '#007BFF'
+      );
+
+      // 4. Triángulo Grande 2 (Cuerpo Derecho) - Violeta Oscuro
+      dibujarFigura(
+        [
+          [2, 3],
+          [4, 3],
+          [2, 1],
+        ],
+        '#8E44AD'
+      );
+
+      // --- GRUPO INFERIOR AGRANDADO ---
+      // Referencia: El lado derecho del cuadrado naranja termina en x=4.
+      // Usamos 'sBig' en lugar de 's' para calcular hacia la izquierda.
+
+      // 7. Triángulo Pequeño 2 (Pie Izquierdo) - Rosa Fucsia
+      // Triángulo invertido más grande
+      dibujarFigura(
+        [
+          [4 - 3 * sBig, 3], // Izquierda Hipotenusa
+          [4 - sBig, 3], // Derecha Hipotenusa
+          [4 - 2 * sBig, 3 + sBig], // Punta inferior
+        ],
+        '#FF1493'
+      );
+
+      // 6. Triángulo Pequeño 1 (Pie Derecho) - Verde Esmeralda (CORTADO)
+      // Triángulo rectángulo más grande
+      dibujarFigura(
+        [
+          [4 - sBig, 3], // Arriba Derecha
+          [4 - sBig, 3 + sBig], // Abajo Derecha
+          [4 - 2 * sBig, 3 + sBig], // Abajo Izquierda
+        ],
+        '#2ECC71'
+      );
+
+      // 5. Cuadrado (Base Central) - Naranja - AGRANDADO
+      // Cuadrado de 1x1 (sBig x sBig)
+      dibujarFigura(
+        [
+          [4 - sBig, 3], // Arriba Izq
+          [4, 3], // Arriba Der (Alineado con el Morado)
+          [4, 3 + sBig], // Abajo Der
+          [4 - sBig, 3 + sBig], // Abajo Izq
+        ],
+        '#FF9F1C'
+      );
+    </script>
+  </body>
+</html>

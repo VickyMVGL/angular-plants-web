@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cuatro Tanagramas Animados</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100vw;
+        height: 100vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        overflow: hidden;
+      }
+
+      .tanagram-title {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        background-color: rgba(255, 255, 255, 0.95);
+        padding: 12px 20px;
+        border-radius: 8px;
+        font-weight: bold;
+        color: #1a5276;
+        z-index: 10;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        font-size: 1.2rem;
+      }
+
+      canvas {
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+      }
+
+      .progress-container {
+        position: absolute;
+        bottom: 20px;
+        left: 20px;
+        right: 20px;
+        height: 8px;
+        background-color: rgba(255, 255, 255, 0.3);
+        border-radius: 4px;
+        overflow: hidden;
+      }
+
+      .progress-bar {
+        height: 100%;
+        background: linear-gradient(to right, #2ecc71, #3498db);
+        width: 25%;
+        transition: width 0.5s ease;
+      }
+
+      .info {
+        position: absolute;
+        bottom: 40px;
+        left: 20px;
+        color: white;
+        font-size: 0.9rem;
+        opacity: 0.8;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="tanagram-title" id="tanagramTitle">Tanagrama 1 - Figura 76</div>
+    <canvas id="miCanvas"></canvas>
+    <div class="progress-container">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+    <div class="info">Transiciones automáticas cada 1.2 segundos</div>
+
+    <script>
+      // ============================================
+      // CONFIGURACIÓN INICIAL
+      // ============================================
+      const canvas = document.getElementById('miCanvas');
+      const ctx = canvas.getContext('2d');
+      const tanagramTitle = document.getElementById('tanagramTitle');
+      const progressBar = document.getElementById('progressBar');
+
+      // Estado
+      let currentTanagram = 1;
+      let totalTanagrams = 4;
+      let isAnimating = false;
+      const transitionSpeed = 1200; // ms - FIJO en 1.2 segundos
+      let lastTransitionTime = 0;
+
+      // Configuración de dibujo - manteniendo el tamaño actual de las figuras
+      const escala = 90; // Mantenemos el tamaño original
+      let offsetX, offsetY;
+
+      // Actualizar tamaño del canvas
+      function actualizarTamanoCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // Centrar las figuras manteniendo su tamaño
+        offsetX = (canvas.width - 4.5 * escala) / 2; // Centrado horizontal
+        offsetY = (canvas.height - 5 * escala) / 2; // Centrado vertical
+      }
+
+      const mediumUnit = Math.sqrt(2); // ~1.414
+      const smallUnit = 1.0;
+
+      // ============================================
+      // POSICIONES CORRECTAS DE LAS PIEZAS
+      // ============================================
+
+      // Funciones auxiliares para calcular posiciones
+      function rotarPunto(x, y, cx, cy, angleDeg) {
+        const angleRad = angleDeg * (Math.PI / 180);
+        const cos = Math.cos(angleRad);
+        const sin = Math.sin(angleRad);
+
+        const tx = x - cx;
+        const ty = y - cy;
+
+        const rx = tx * cos - ty * sin;
+        const ry = tx * sin + ty * cos;
+
+        return [rx + cx, ry + cy];
+      }
+
+      // POSICIONES EXACTAS DE LOS TANAGRAMAS ORIGINALES
+      const tanagramPositions = {
+        // Tanagrama 1 - Figura 76 (CORRECTO)
+        1: {
+          morado: [
+            [1.586, 4.0],
+            [4.414, 4.0],
+            [3.0, 2.586],
+          ],
+          azul: [
+            [4.414, 4.0],
+            [3.0, 2.586],
+            [4.414, 1.172],
+          ],
+          amarillo: [
+            [4.414, 0.872],
+            [3.0, 0.872],
+            [3.707, 1.579],
+          ],
+          naranja: [
+            [3.0, 0.872],
+            [3.707, 1.579],
+            [3.0, 2.286],
+            [2.293, 1.579],
+          ],
+          verde: [
+            [3.0, 0.872],
+            [1.586, 0.872],
+            [2.293, 1.579],
+          ],
+          rosa: [
+            [2.586, 1.9],
+            [1.586, 2.9],
+            [1.586, 0.9],
+          ],
+          rojo: [
+            [2.6, 1.9],
+            [1.6, 2.9],
+            [1.6, 4.0],
+            [2.6, 3.0],
+          ],
+        },
+
+        // Tanagrama 2 - Figura 143 (CORREGIDO según el HTML original)
+        2: {
+          // Morado - Triángulo Grande 2 (rotado 135 grados, trasladado)
+          morado: (() => {
+            const [v1x, v1y] = rotarPunto(1.586, 4.0, 3.0, 2.586, 135);
+            const [v2x, v2y] = rotarPunto(4.414, 4.0, 3.0, 2.586, 135);
+            const v3x = 3.0,
+              v3y = 2.586;
+            const TX = 0.3,
+              TY = 0.2;
+            return [
+              [v1x + TX, v1y + TY],
+              [v2x + TX, v2y + TY],
+              [v3x + TX, v3y + TY],
+            ];
+          })(),
+
+          // Azul - Triángulo Grande 1 (rotado 45, invertido, trasladado)
+          azul: (() => {
+            const [v1x_r, v1y_r] = rotarPunto(4.414, 4.0, 3.0, 2.586, 45);
+            const [v3x_r, v3y_r] = rotarPunto(4.414, 1.172, 3.0, 2.586, 45);
+            const centerY = 2.586;
+            const distY = v1y_r - centerY;
+            const TX = 0.3,
+              TY = 0.3;
+
+            return [
+              [3.0 + TX, centerY - distY + TY],
+              [3.0 + TX, centerY + TY],
+              [5.0 + TX, centerY + TY],
+            ];
+          })(),
+
+          // Amarillo - Triángulo Pequeño 1 (movido)
+          amarillo: (() => {
+            const headPivotX = 4.414,
+              headPivotY = 1.172;
+            const Y_SHIFT = -0.3;
+            const DOWN_SHIFT = 2.1;
+            const X_SHIFT = -1.5;
+
+            const v3x = headPivotX - mediumUnit + X_SHIFT;
+            const v3y = headPivotY + Y_SHIFT + DOWN_SHIFT;
+            const v1x = v3x + smallUnit;
+            const v1y = v3y;
+            const v2x = v1x;
+            const v2y = v1y + smallUnit;
+
+            return [
+              [v2x, v2y],
+              [v3x, v3y],
+              [v1x, v1y],
+            ];
+          })(),
+
+          // Naranja - Cuadrado (rotado 45 grados, movido)
+          naranja: (() => {
+            const centroX = 3.0,
+              centroY = 1.579;
+            const [v1x, v1y] = rotarPunto(3.0, 0.872, centroX, centroY, 45);
+            const [v2x, v2y] = rotarPunto(3.707, 1.579, centroX, centroY, 45);
+            const [v3x, v3y] = rotarPunto(3.0, 2.286, centroX, centroY, 45);
+            const [v4x, v4y] = rotarPunto(2.293, 1.579, centroX, centroY, 45);
+            const TY = 1.9;
+
+            return [
+              [v1x, v1y + TY],
+              [v2x, v2y + TY],
+              [v3x, v3y + TY],
+              [v4x, v4y + TY],
+            ];
+          })(),
+
+          // Verde - Triángulo Pequeño 2 (rotado 135 grados, movido)
+          verde: (() => {
+            const pivotX = 3.0,
+              pivotY = 0.872;
+            const [v2x, v2y] = rotarPunto(1.586, 0.872, pivotX, pivotY, 135);
+            const [v1x, v1y] = rotarPunto(2.293, 1.579, pivotX, pivotY, 135);
+            const TX = 0.5,
+              TY = 3.1;
+
+            return [
+              [pivotX + TX, pivotY + TY],
+              [v2x + TX, v2y + TY],
+              [v1x + TX, v1y + TY],
+            ];
+          })(),
+
+          // Rosa - Triángulo Mediano (movido)
+          rosa: (() => {
+            const shiftY = -2.25;
+            const TX = 0.7;
+            const baseY = 4.0;
+
+            return [
+              [2.586 + TX, baseY - smallUnit + shiftY],
+              [1.586 + TX, baseY + shiftY],
+              [1.586 + TX, baseY - smallUnit * 2 + shiftY],
+            ];
+          })(),
+
+          // Rojo - Paralelepípedo (rotado 90 grados, movido)
+          rojo: (() => {
+            const centroX = 2.1,
+              centroY = 2.95;
+            const [v1x, v1y] = rotarPunto(2.6, 1.9, centroX, centroY, 90);
+            const [v2x, v2y] = rotarPunto(1.6, 2.9, centroX, centroY, 90);
+            const [v3x, v3y] = rotarPunto(1.6, 4.0, centroX, centroY, 90);
+            const [v4x, v4y] = rotarPunto(2.6, 3.0, centroX, centroY, 90);
+            const TX = -0.7,
+              TY = 0.5;
+
+            return [
+              [v1x + TX, v1y + TY],
+              [v2x + TX, v2y + TY],
+              [v3x + TX, v3y + TY],
+              [v4x + TX, v4y + TY],
+            ];
+          })(),
+        },
+
+        // Tanagrama 3 - Figura 28 (CORRECTO)
+        3: {
+          amarillo: [
+            [0, 2],
+            [1, 2],
+            [0, 3],
+          ],
+          rojo: [
+            [1, 1],
+            [2, 1],
+            [1, 2],
+            [0, 2],
+          ],
+          azul: [
+            [0, 3],
+            [2, 3],
+            [2, 1],
+          ],
+          morado: [
+            [2, 3],
+            [4, 3],
+            [2, 1],
+          ],
+          rosa: [
+            [1, 3],
+            [3, 3],
+            [2, 4],
+          ],
+          verde: [
+            [3, 3],
+            [3, 4],
+            [2, 4],
+          ],
+          naranja: [
+            [3, 3],
+            [4, 3],
+            [4, 4],
+            [3, 4],
+          ],
+        },
+
+        // Tanagrama 4 - Figura 165 (CORREGIDO según el HTML original)
+        4: {
+          // Morado - Triángulo Grande 2 (rotado 135 grados, bajado)
+          morado: (() => {
+            const [v1x, v1y] = rotarPunto(1.586, 4.0, 3.0, 2.586, 135);
+            const [v2x, v2y] = rotarPunto(4.414, 4.0, 3.0, 2.586, 135);
+            const v3x = 3.0,
+              v3y = 2.586;
+            const TY = -1.2;
+
+            return [
+              [v1x, v1y + TY],
+              [v2x, v2y + TY],
+              [v3x, v3y + TY],
+            ];
+          })(),
+
+          // Azul - Triángulo Grande 1 (rotado 45, invertido, bajado)
+          azul: (() => {
+            const [v1x_r, v1y_r] = rotarPunto(4.414, 4.0, 3.0, 2.586, 45);
+            const centerY = 2.586;
+            const distY = v1y_r - centerY;
+            const TY = -1.2;
+
+            return [
+              [3.0, centerY - distY + TY],
+              [3.0, centerY + TY],
+              [5.0, centerY + TY],
+            ];
+          })(),
+
+          // Amarillo - Triángulo Pequeño 1 (rotado 45 grados)
+          amarillo: (() => {
+            const headPivotX = 4.414,
+              headPivotY = 1.172;
+            const Y_SHIFT = -0.3;
+            const DOWN_SHIFT = 1.95;
+
+            const pivotX = headPivotX - mediumUnit;
+            const pivotY = headPivotY + Y_SHIFT + DOWN_SHIFT;
+
+            const [v1x, v1y] = rotarPunto(pivotX + smallUnit, pivotY, pivotX, pivotY, 45);
+            const [v2x, v2y] = rotarPunto(
+              pivotX + smallUnit,
+              pivotY + smallUnit,
+              pivotX,
+              pivotY,
+              45
+            );
+
+            return [
+              [v2x, v2y],
+              [pivotX, pivotY],
+              [v1x, v1y],
+            ];
+          })(),
+
+          // Naranja - Cuadrado (rotado 90 grados, subido)
+          naranja: (() => {
+            const centroX = 3.0,
+              centroY = 1.579;
+            const [v1x, v1y] = rotarPunto(3.0, 0.872, centroX, centroY, 90);
+            const [v2x, v2y] = rotarPunto(3.707, 1.579, centroX, centroY, 90);
+            const [v3x, v3y] = rotarPunto(3.0, 2.286, centroX, centroY, 90);
+            const [v4x, v4y] = rotarPunto(2.293, 1.579, centroX, centroY, 90);
+            const TY = 0.5;
+
+            return [
+              [v1x, v1y + TY],
+              [v2x, v2y + TY],
+              [v3x, v3y + TY],
+              [v4x, v4y + TY],
+            ];
+          })(),
+
+          // Verde - Triángulo Pequeño 2 (rotado -270 grados, bajado)
+          verde: (() => {
+            const pivotX = 3.0,
+              pivotY = 0.872;
+            const [v2x, v2y] = rotarPunto(1.586, 0.872, pivotX, pivotY, -270);
+            const [v1x, v1y] = rotarPunto(2.293, 1.579, pivotX, pivotY, -270);
+            const TY = 3.35;
+
+            return [
+              [pivotX, pivotY + TY],
+              [v2x, v2y + TY],
+              [v1x, v1y + TY],
+            ];
+          })(),
+
+          // Rosa - Triángulo Mediano (rotado 90 grados, reflejado, movido)
+          rosa: (() => {
+            const baseY = 4.0;
+            const TY_BASE = 3.25;
+            const TX = -0.1;
+
+            const v1x_base = 2.586;
+            const v1y_base = baseY - smallUnit + TY_BASE;
+
+            const [v2x_r, v2y_r] = rotarPunto(1.586, baseY + TY_BASE, v1x_base, v1y_base, 90);
+            const [v3x_r, v3y_r] = rotarPunto(
+              1.586,
+              baseY - smallUnit * 2 + TY_BASE,
+              v1x_base,
+              v1y_base,
+              90
+            );
+
+            const reflectionY = v2y_r;
+            const v1y_reflected = 2 * reflectionY - v1y_base;
+
+            return [
+              [v1x_base + TX, v1y_reflected],
+              [v2x_r + TX, v2y_r],
+              [v3x_r + TX, v3y_r],
+            ];
+          })(),
+
+          // Rojo - Paralelepípedo (rotado 90 grados, movido)
+          rojo: (() => {
+            const centroX = 2.1,
+              centroY = 2.95;
+            const [v1x, v1y] = rotarPunto(2.6, 1.9, centroX, centroY, 90);
+            const [v2x, v2y] = rotarPunto(1.6, 2.9, centroX, centroY, 90);
+            const [v3x, v3y] = rotarPunto(1.6, 4.0, centroX, centroY, 90);
+            const [v4x, v4y] = rotarPunto(2.6, 3.0, centroX, centroY, 90);
+            const TX = 1.5,
+              TY = 1.8;
+
+            return [
+              [v1x + TX, v1y + TY],
+              [v2x + TX, v2y + TY],
+              [v3x + TX, v3y + TY],
+              [v4x + TX, v4y + TY],
+            ];
+          })(),
+        },
+      };
+
+      // Posiciones actuales de animación
+      let currentPositions = JSON.parse(JSON.stringify(tanagramPositions[1]));
+      let targetPositions = JSON.parse(JSON.stringify(tanagramPositions[1]));
+      let animationProgress = 0;
+
+      // ============================================
+      // FUNCIONES DE DIBUJO Y ANIMACIÓN
+      // ============================================
+
+      // Dibujar una pieza
+      function dibujarPieza(puntos, color) {
+        if (!puntos || puntos.length === 0) return;
+
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.moveTo(offsetX + puntos[0][0] * escala, offsetY + puntos[0][1] * escala);
+
+        for (let i = 1; i < puntos.length; i++) {
+          ctx.lineTo(offsetX + puntos[i][0] * escala, offsetY + puntos[i][1] * escala);
+        }
+
+        ctx.closePath();
+        ctx.fill();
+
+        // Borde blanco más fino para mejor visualización
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+
+      // Limpiar canvas
+      function limpiarCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+
+      // Dibujar todas las piezas
+      function dibujarTanagrama() {
+        limpiarCanvas();
+
+        // Fondo con gradiente sutil
+        const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+        gradient.addColorStop(0, '#f8f9fa');
+        gradient.addColorStop(1, '#e9ecef');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Dibujar piezas en el orden correcto
+        dibujarPieza(currentPositions.morado, '#8E44AD');
+        dibujarPieza(currentPositions.azul, '#007BFF');
+        dibujarPieza(currentPositions.amarillo, '#F4D03F');
+        dibujarPieza(currentPositions.naranja, '#FF9F1C');
+        dibujarPieza(currentPositions.verde, '#2ECC71');
+        dibujarPieza(currentPositions.rosa, '#FF1493');
+        dibujarPieza(currentPositions.rojo, '#FF6B6B');
+      }
+
+      // Actualizar animación
+      function actualizarAnimacion(tiempoActual) {
+        if (!lastTransitionTime) lastTransitionTime = tiempoActual;
+
+        const deltaTime = tiempoActual - lastTransitionTime;
+        lastTransitionTime = tiempoActual;
+
+        // Actualizar progreso de animación
+        if (isAnimating) {
+          animationProgress += deltaTime / transitionSpeed;
+
+          if (animationProgress >= 1) {
+            animationProgress = 1;
+            isAnimating = false;
+
+            // Preparar siguiente transición automáticamente
+            setTimeout(iniciarSiguienteTransicion, 300);
+          } else {
+            // Interpolación suave con easing
+            const t = animationProgress;
+            const smoothT = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+
+            // Interpolar todas las piezas
+            const piezas = ['morado', 'azul', 'amarillo', 'naranja', 'verde', 'rosa', 'rojo'];
+            for (const pieza of piezas) {
+              if (
+                currentPositions[pieza] &&
+                targetPositions[pieza] &&
+                currentPositions[pieza].length === targetPositions[pieza].length
+              ) {
+                for (let i = 0; i < currentPositions[pieza].length; i++) {
+                  // Interpolar coordenada X
+                  const startX = currentPositions[pieza][i][0];
+                  const targetX = targetPositions[pieza][i][0];
+                  currentPositions[pieza][i][0] = startX + (targetX - startX) * smoothT;
+
+                  // Interpolar coordenada Y
+                  const startY = currentPositions[pieza][i][1];
+                  const targetY = targetPositions[pieza][i][1];
+                  currentPositions[pieza][i][1] = startY + (targetY - startY) * smoothT;
+                }
+              }
+            }
+          }
+        }
+
+        dibujarTanagrama();
+        requestAnimationFrame(actualizarAnimacion);
+      }
+
+      // ============================================
+      // CONTROL DE TRANSICIONES
+      // ============================================
+
+      function actualizarInterfaz() {
+        const titulos = [
+          'Tanagrama 1 - Figura 76',
+          'Tanagrama 2 - Figura 143',
+          'Tanagrama 3 - Figura 28',
+          'Tanagrama 4 - Figura 165',
+        ];
+
+        tanagramTitle.textContent = titulos[currentTanagram - 1];
+        progressBar.style.width = `${(currentTanagram / totalTanagrams) * 100}%`;
+      }
+
+      function iniciarTransicion() {
+        if (isAnimating) return;
+
+        // Establecer posiciones objetivo exactas del tanagrama actual
+        targetPositions = JSON.parse(JSON.stringify(tanagramPositions[currentTanagram]));
+        animationProgress = 0;
+        isAnimating = true;
+
+        actualizarInterfaz();
+      }
+
+      function iniciarSiguienteTransicion() {
+        currentTanagram = currentTanagram < totalTanagrams ? currentTanagram + 1 : 1;
+        iniciarTransicion();
+      }
+
+      // ============================================
+      // INICIALIZACIÓN Y EVENTOS
+      // ============================================
+
+      function inicializar() {
+        // Configurar tamaño del canvas
+        actualizarTamanoCanvas();
+
+        // Escuchar cambios de tamaño de ventana
+        window.addEventListener('resize', () => {
+          actualizarTamanoCanvas();
+          dibujarTanagrama();
+        });
+
+        // Iniciar primera transición
+        actualizarInterfaz();
+        iniciarTransicion();
+
+        // Configurar transición cíclica automática cada 1.2 segundos + pausa
+        setInterval(() => {
+          if (!isAnimating) {
+            iniciarSiguienteTransicion();
+          }
+        }, transitionSpeed + 300); // 1.2s animación + 0.3s pausa
+
+        // Iniciar bucle de animación
+        requestAnimationFrame(actualizarAnimacion);
+      }
+
+      // Inicializar cuando se carga la página
+      window.addEventListener('load', inicializar);
+    </script>
+  </body>
+</html>

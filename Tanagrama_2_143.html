@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tangram - Figura (Ajuste Fino: Triángulo Amarillo Movido)</title>
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        background-color: #f0f2f5;
+        font-family: sans-serif;
+      }
+      canvas {
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      h2 {
+        color: #333;
+        margin-bottom: 10px;
+        font-weight: bold;
+        color: #1a5276;
+      }
+      .message {
+        margin-top: 20px;
+        font-size: 1.2rem;
+        color: #e74c3c;
+        font-weight: 600;
+        padding: 10px;
+        border: 2px solid #e74c3c;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Tanagrama 2 - FIgura 143</h2>
+    <canvas id="miCanvas" width="600" height="500"></canvas>
+
+    <script>
+      const canvas = document.getElementById('miCanvas');
+      const ctx = canvas.getContext('2d');
+
+      // Configuración de la cuadrícula
+      const escala = 80;
+      // Ajuste de offset para centrar la figura
+      const offsetX = 50;
+      const offsetY = 50;
+
+      // Constantes geométricas para las piezas del Tangram
+      // mediumUnit = 1.414 (sqrt(2) approx) -> Cateto del triángulo mediano
+      const mediumUnit = 1.414;
+      // smallUnit = 1.0 -> Lado de los catetos pequeños
+      const smallUnit = 1.0;
+      const halfDiagonal = mediumUnit / 2; // 0.707
+
+      // *** DESPLAZAMIENTO GLOBAL HACIA LA DERECHA (0.0 unidades) ***
+      const GLOBAL_X_SHIFT = 0.0;
+
+      // Función para dibujar cualquier polígono
+      function dibujarFigura(puntos, color) {
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        // El primer punto inicia el camino
+        ctx.moveTo(offsetX + puntos[0][0] * escala, offsetY + puntos[0][1] * escala);
+
+        // Los siguientes puntos trazan las líneas
+        for (let i = 1; i < puntos.length; i++) {
+          ctx.lineTo(offsetX + puntos[i][0] * escala, offsetY + puntos[i][1] * escala);
+        }
+
+        ctx.closePath();
+        ctx.fill();
+
+        // Borde blanco para distinguir las piezas
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+      }
+
+      /**
+       * Rota un punto (x, y) alrededor de un centro (cx, cy) por un ángulo en grados.
+       * Positive angle is Counter-Clockwise (CCW).
+       */
+      function rotarPunto(x, y, cx, cy, angleDeg) {
+        const angleRad = angleDeg * (Math.PI / 180);
+        const cos = Math.cos(angleRad);
+        const sin = Math.sin(angleRad);
+
+        // Trasladar punto al origen
+        const tx = x - cx;
+        const ty = y - cy;
+
+        // Rotar punto
+        const rx = tx * cos - ty * sin;
+        const ry = tx * sin + ty * cos;
+
+        // Trasladar punto de vuelta
+        const finalX = rx + cx;
+        const finalY = ry + cy;
+
+        return [finalX, finalY];
+      }
+
+      // --- PIEZA 1 (Morado - Triángulo Grande 2) ---
+      // Rotado 135 grados alrededor de su vértice superior (V3),
+      // Traslación acumulada: Bajar 0.2 y Derecha 0.3
+
+      const halfHypotenuse = mediumUnit;
+      const height = mediumUnit;
+      const baseCenterY = 4.0;
+      const baseCenterX = 3.0;
+      const ROTATION_ANGLE_MORADO = 135; // 135 grados antihorario
+
+      // Vértices ORIGINALES (antes de rotar)
+      const moradoV1X_orig = baseCenterX - halfHypotenuse; // 1.586
+      const moradoV1Y_orig = baseCenterY; // 4.0
+      const moradoV2X_orig = baseCenterX + halfHypotenuse; // 4.414
+      const moradoV2Y_orig = baseCenterY; // 4.0
+      const moradoV3X_orig = baseCenterX; // 3.0 (Punto de rotación)
+      const moradoV3Y_orig = baseCenterY - height; // 2.586
+
+      // Centro de rotación (V3)
+      const moradoCenterX = moradoV3X_orig; // 3.0
+      const moradoCenterY = moradoV3Y_orig; // 2.586
+
+      // 1. ROTACIÓN
+      // Vértice 3 (Centro) se mantiene
+      let moradoV3X = moradoV3X_orig; // 3.0
+      let moradoV3Y = moradoV3Y_orig; // 2.586
+
+      // Rotar V1
+      let [moradoV1X, moradoV1Y] = rotarPunto(
+        moradoV1X_orig,
+        moradoV1Y_orig,
+        moradoCenterX,
+        moradoCenterY,
+        ROTATION_ANGLE_MORADO
+      );
+      // Rotar V2
+      let [moradoV2X, moradoV2Y] = rotarPunto(
+        moradoV2X_orig,
+        moradoV2Y_orig,
+        moradoCenterX,
+        moradoCenterY,
+        ROTATION_ANGLE_MORADO
+      );
+
+      // 2. TRASLACIÓN (Bajar 0.2, Derecha 0.3)
+      const MORADO_TRANSLATE_Y = 0.2;
+      const MORADO_TRANSLATE_X = 0.3; // 0.3 + GLOBAL_X_SHIFT
+
+      moradoV1X += MORADO_TRANSLATE_X;
+      moradoV2X += MORADO_TRANSLATE_X;
+      moradoV3X += MORADO_TRANSLATE_X;
+
+      moradoV1Y += MORADO_TRANSLATE_Y;
+      moradoV2Y += MORADO_TRANSLATE_Y;
+      moradoV3Y += MORADO_TRANSLATE_Y;
+
+      dibujarFigura(
+        [
+          [moradoV1X, moradoV1Y],
+          [moradoV2X, moradoV2Y],
+          [moradoV3X, moradoV3Y],
+        ],
+        '#8E44AD'
+      );
+
+      // --- PIECE 2 (Azul - Triángulo Grande 1) ---
+      // Traslación acumulada: Bajar 0.3 y Derecha 0.3
+      const azulV1X_orig = moradoV2X_orig; // 4.414
+      const azulV1Y_orig = moradoV2Y_orig; // 4.0
+      const azulV2X_orig = moradoV3X_orig; // 3.0 (Cintura/Pivot)
+      const azulV2Y_orig = moradoV3Y_orig; // 2.586
+      const azulV3X_orig = moradoV2X_orig; // 4.414
+      const azulV3Y_orig = moradoV3Y_orig - mediumUnit; // 1.172
+
+      // Definir el centro de rotación (Vértice V2)
+      const azulCenterX = azulV2X_orig; // 3.0
+      const azulCenterY = azulV2Y_orig; // 2.586
+      const ROTATION_ANGLE = 45; // 45 grados sentido antihorario
+
+      // 1. Rotación de 45° CCW
+      const [azulV1X_rotated, azulV1Y_rotated] = rotarPunto(
+        azulV1X_orig,
+        azulV1Y_orig,
+        azulCenterX,
+        azulCenterY,
+        ROTATION_ANGLE
+      );
+      const [azulV3X_rotated, azulV3Y_rotated] = rotarPunto(
+        azulV3X_orig,
+        azulV3Y_orig,
+        azulCenterX,
+        azulCenterY,
+        ROTATION_ANGLE
+      );
+
+      // 2. Inversión Vertical (Reflexión sobre el eje horizontal de la base)
+      const azulCenterLineY = azulCenterY;
+
+      let azulV2X = azulCenterX; // 3.0 (Se mantiene)
+      let azulV2Y = azulCenterY; // 2.586 (Se mantiene)
+
+      let azulV3X = azulV3X_rotated; // 5.0
+      let azulV3Y = azulCenterLineY; // 2.586
+
+      // V1 es reflejado
+      const distY = azulV1Y_rotated - azulCenterLineY;
+      let azulV1X = azulV1X_rotated; // 3.0
+      let azulV1Y = azulCenterLineY - distY; // 0.586
+
+      // 3. Traslación Final (Bajar 0.3, Derecha 0.3)
+      const AZUL_TRANSLATE_Y = 0.3;
+      const AZUL_TRANSLATE_X = 0.3; // 0.3 + GLOBAL_X_SHIFT
+
+      azulV1X += AZUL_TRANSLATE_X;
+      azulV2X += AZUL_TRANSLATE_X;
+      azulV3X += AZUL_TRANSLATE_X;
+
+      azulV1Y += AZUL_TRANSLATE_Y;
+      azulV2Y += AZUL_TRANSLATE_Y;
+      azulV3Y += AZUL_TRANSLATE_Y;
+
+      dibujarFigura(
+        [
+          [azulV1X, azulV1Y],
+          [azulV2X, azulV2Y],
+          [azulV3X, azulV3Y],
+        ],
+        '#007BFF'
+      );
+
+      // --- PIEZA 3 (Amarillo Oro - Triángulo Pequeño 1) ---
+
+      const Y_SHIFT_HEAD = -0.3;
+      // Desplazamiento vertical acumulado (2.0 + 0.1)
+      const AMARILLO_DOWN_SHIFT = 2.1;
+      // Nuevo desplazamiento horizontal total (-1.2 - 0.3)
+      const AMARILLO_X_SHIFT = -1.5;
+
+      const headPivotX = azulV3X_orig; // 4.414
+      const headPivotY = azulV3Y_orig; // 1.172
+
+      // Centro de rotación / Pivot (V3 original)
+      // Este punto es el extremo inferior izquierdo de la pieza en su posición final
+      const amarilloV3X_final = headPivotX - mediumUnit + GLOBAL_X_SHIFT + AMARILLO_X_SHIFT;
+      // Aplicar el desplazamiento de 2.1 unidades
+      const amarilloV3Y_final = headPivotY + Y_SHIFT_HEAD + AMARILLO_DOWN_SHIFT;
+
+      // Triángulo Invertido:
+      // V1 (Ángulo Recto) está 1.0 unidad a la derecha de V3.
+      // Cateto 1: V3 a V1 (Longitud 1.0, horizontal)
+      const amarilloV1X_final = amarilloV3X_final + smallUnit;
+      const amarilloV1Y_final = amarilloV3Y_final;
+
+      // V2 está 1.0 unidad arriba de V1.
+      // Cateto 2: V1 a V2 (Longitud 1.0, vertical)
+      const amarilloV2X_final = amarilloV1X_final;
+      const amarilloV2Y_final = amarilloV1Y_final + smallUnit;
+
+      dibujarFigura(
+        [
+          [amarilloV2X_final, amarilloV2Y_final], // V2: Extremo superior de la hipotenusa
+          [amarilloV3X_final, amarilloV3Y_final], // V3: Extremo inferior de la hipotenusa (Pivot)
+          [amarilloV1X_final, amarilloV1Y_final], // V1: Ángulo recto
+        ],
+        '#F4D03F'
+      );
+
+      // --- PIEZA 4 (Naranja - Cuadrado) ---
+      // Traslación acumulada: Abajo 1.9. Desplazamiento horizontal: 0.0
+
+      // Coordenadas originales (en forma de rombo)
+      const naranjaV1X_orig = 3.0;
+      const naranjaV2X_orig = 3.707;
+      const naranjaV3X_orig = 3.0;
+      const naranjaV4X_orig = 2.293;
+
+      const naranjaV1Y_orig = 0.872;
+      const naranjaV2Y_orig = 1.579;
+      const naranjaV3Y_orig = 2.286;
+      const naranjaV4Y_orig = 1.579;
+
+      // Centro de rotación original
+      const naranjaCenterX = (naranjaV1X_orig + naranjaV3X_orig) / 2; // 3.0
+      const naranjaCenterY = (naranjaV1Y_orig + naranjaV3Y_orig) / 2; // 1.579
+
+      // Rotación de 45 grados (dejándolo en forma de cuadrado)
+      let [naranjaV1X, naranjaV1Y] = rotarPunto(
+        naranjaV1X_orig,
+        naranjaV1Y_orig,
+        naranjaCenterX,
+        naranjaCenterY,
+        45
+      );
+      let [naranjaV2X, naranjaV2Y] = rotarPunto(
+        naranjaV2X_orig,
+        naranjaV2Y_orig,
+        naranjaCenterX,
+        naranjaCenterY,
+        45
+      );
+      let [naranjaV3X, naranjaV3Y] = rotarPunto(
+        naranjaV3X_orig,
+        naranjaV3Y_orig,
+        naranjaCenterX,
+        naranjaCenterY,
+        45
+      );
+      let [naranjaV4X, naranjaV4Y] = rotarPunto(
+        naranjaV4X_orig,
+        naranjaV4Y_orig,
+        naranjaCenterX,
+        naranjaCenterY,
+        45
+      );
+
+      const TRANSLATE_Y = 1.9;
+
+      // Aplicar traslación vertical y horizontal
+      naranjaV1Y += TRANSLATE_Y;
+      naranjaV2Y += TRANSLATE_Y;
+      naranjaV3Y += TRANSLATE_Y;
+      naranjaV4Y += TRANSLATE_Y;
+
+      naranjaV1X += GLOBAL_X_SHIFT; // Desplazamiento horizontal: 0.0
+      naranjaV2X += GLOBAL_X_SHIFT;
+      naranjaV3X += GLOBAL_X_SHIFT;
+      naranjaV4X += GLOBAL_X_SHIFT;
+
+      dibujarFigura(
+        [
+          [naranjaV1X, naranjaV1Y],
+          [naranjaV2X, naranjaV2Y],
+          [naranjaV3X, naranjaV3Y],
+          [naranjaV4X, naranjaV4Y],
+        ],
+        '#FF9F1C'
+      );
+
+      // --- PIEZA 5 (Verde Esmeralda - Triángulo Pequeño 2) ---
+      // Trasladado 3.1 unidades hacia abajo.
+      // Desplazamiento horizontal: 0.5 a la derecha.
+
+      // Vértices originales (V3 es el ángulo recto)
+      const verdeV3X_orig = naranjaV1X_orig; // 3.0 (Pivot)
+      const verdeV3Y_orig = naranjaV1Y_orig; // 0.872 (Pivot)
+
+      const verdeV2X_orig = naranjaV1X_orig - mediumUnit; // 1.586
+      const verdeV2Y_orig = naranjaV1Y_orig; // 0.872
+
+      const verdeV1X_orig = naranjaV4X_orig; // 2.293
+      const verdeV1Y_orig = naranjaV4Y_orig; // 1.579
+
+      const ROTATION_ANGLE_VERDE = 135; // 90 + 45 = 135 grados CCW
+
+      // Pivot (V3)
+      const verdeCenterX = verdeV3X_orig;
+      const verdeCenterY = verdeV3Y_orig;
+
+      // 1. Rotación
+      let [verdeV2X, verdeV2Y] = rotarPunto(
+        verdeV2X_orig,
+        verdeV2Y_orig,
+        verdeCenterX,
+        verdeCenterY,
+        ROTATION_ANGLE_VERDE
+      );
+      let [verdeV1X, verdeV1Y] = rotarPunto(
+        verdeV1X_orig,
+        verdeV1Y_orig,
+        verdeCenterX,
+        verdeCenterY,
+        ROTATION_ANGLE_VERDE
+      );
+
+      // V3 se mantiene temporalmente
+      let verdeV3X = verdeV3X_orig;
+      let verdeV3Y = verdeV3Y_orig;
+
+      // 2. TRASLACIÓN: 3.1 unidades hacia abajo + 0.5 a la derecha
+      const VERDE_TRANSLATE_Y = 3.1;
+      const VERDE_TRANSLATE_X = 0.5;
+
+      verdeV1Y += VERDE_TRANSLATE_Y;
+      verdeV2Y += VERDE_TRANSLATE_Y;
+      verdeV3Y += VERDE_TRANSLATE_Y;
+
+      // Aplicar el desplazamiento horizontal específico y el global (0.0)
+      verdeV1X += GLOBAL_X_SHIFT + VERDE_TRANSLATE_X;
+      verdeV2X += GLOBAL_X_SHIFT + VERDE_TRANSLATE_X;
+      verdeV3X += GLOBAL_X_SHIFT + VERDE_TRANSLATE_X;
+
+      dibujarFigura(
+        [
+          [verdeV3X, verdeV3Y],
+          [verdeV2X, verdeV2Y],
+          [verdeV1X, verdeV1Y],
+        ],
+        '#2ECC71'
+      );
+
+      // --- PIEZA 6 (Rosa Fucsia - Triángulo Mediano) ---
+      // Desplazamiento horizontal: 0.7 a la derecha (del ajuste anterior)
+      const ROSA_TRANSLATE_X = 0.7;
+      // Desplazamiento vertical ajustado: -2.3 (anterior) + 0.05 (bajar) = -2.25
+      const shiftY = -2.25;
+
+      // V2 (Punto Superior de la Hipotenusa)
+      const rosaV2X_orig = moradoV1X_orig; // 1.586
+      const rosaV2Y = moradoV1Y_orig + shiftY;
+
+      // V3 (Punto Inferior de la Hipotenusa)
+      const rosaV3X_orig = rosaV2X_orig; // 1.586
+      const rosaV3Y = moradoV1Y_orig - smallUnit * 2 + shiftY;
+
+      // V1 (Ángulo Recto - Apunta a la derecha)
+      const rosaV1X_orig = rosaV2X_orig + smallUnit; // 2.586
+      const rosaV1Y = moradoV1Y_orig - smallUnit + shiftY;
+
+      // Aplicar desplazamiento
+      const rosaV2X = rosaV2X_orig + GLOBAL_X_SHIFT + ROSA_TRANSLATE_X;
+      const rosaV3X = rosaV3X_orig + GLOBAL_X_SHIFT + ROSA_TRANSLATE_X;
+      const rosaV1X = rosaV1X_orig + GLOBAL_X_SHIFT + ROSA_TRANSLATE_X;
+
+      dibujarFigura(
+        [
+          [rosaV1X, rosaV1Y],
+          [rosaV2X, rosaV2Y],
+          [rosaV3X, rosaV3Y],
+        ],
+        '#FF1493'
+      );
+
+      // --- PIEZA 7 (Rojo - Paralelepípedo) ---
+
+      // Coordenadas iniciales (antes de rotar)
+      const rojoV1X_orig = 2.6;
+      const rojoV1Y_orig = 1.9;
+      const rojoV2X_orig = 1.6;
+      const rojoV2Y_orig = 2.9;
+      const rojoV3X_orig = 1.6;
+      const rojoV3Y_orig = 4.0;
+      const rojoV4X_orig = 2.6;
+      const rojoV4Y_orig = 3.0;
+
+      // Centro de rotación
+      const rojoCenterX = (rojoV1X_orig + rojoV3X_orig) / 2; // 2.1
+      const rojoCenterY = (rojoV1Y_orig + rojoV3Y_orig) / 2; // 2.95
+
+      // Rotación de 90 grados CCW (antihorario)
+      const ROTATION_ANGLE_ROJO = 90;
+
+      // Desplazamiento vertical acumulado (Bajar 0.5 unidades)
+      const ROJO_TRANSLATE_Y = 0.5;
+      // Desplazamiento Horizontal: -0.8 (anterior) + 0.1 (ahora) = -0.7 unidades a la izquierda
+      const ROJO_TRANSLATE_X = -0.7;
+
+      // 1. Aplicar Rotación
+      let [rojoV1X_rot, rojoV1Y_rot] = rotarPunto(
+        rojoV1X_orig,
+        rojoV1Y_orig,
+        rojoCenterX,
+        rojoCenterY,
+        ROTATION_ANGLE_ROJO
+      );
+      let [rojoV2X_rot, rojoV2Y_rot] = rotarPunto(
+        rojoV2X_orig,
+        rojoV2Y_orig,
+        rojoCenterX,
+        rojoCenterY,
+        ROTATION_ANGLE_ROJO
+      );
+      let [rojoV3X_rot, rojoV3Y_rot] = rotarPunto(
+        rojoV3X_orig,
+        rojoV3Y_orig,
+        rojoCenterX,
+        rojoCenterY,
+        ROTATION_ANGLE_ROJO
+      );
+      let [rojoV4X_rot, rojoV4Y_rot] = rotarPunto(
+        rojoV4X_orig,
+        rojoV4Y_orig,
+        rojoCenterX,
+        rojoCenterY,
+        ROTATION_ANGLE_ROJO
+      );
+
+      // 2. Aplicar Desplazamiento Horizontal (Global + Específico) y Vertical
+      const rojoV1X = rojoV1X_rot + GLOBAL_X_SHIFT + ROJO_TRANSLATE_X;
+      const rojoV2X = rojoV2X_rot + GLOBAL_X_SHIFT + ROJO_TRANSLATE_X;
+      const rojoV3X = rojoV3X_rot + GLOBAL_X_SHIFT + ROJO_TRANSLATE_X;
+      const rojoV4X = rojoV4X_rot + GLOBAL_X_SHIFT + ROJO_TRANSLATE_X;
+
+      const rojoV1Y = rojoV1Y_rot + ROJO_TRANSLATE_Y;
+      const rojoV2Y = rojoV2Y_rot + ROJO_TRANSLATE_Y;
+      const rojoV3Y = rojoV3Y_rot + ROJO_TRANSLATE_Y;
+      const rojoV4Y = rojoV4Y_rot + ROJO_TRANSLATE_Y;
+
+      dibujarFigura(
+        [
+          [rojoV1X, rojoV1Y],
+          [rojoV2X, rojoV2Y],
+          [rojoV3X, rojoV3Y],
+          [rojoV4X, rojoV4Y],
+        ],
+        '#FF6B6B'
+      );
+    </script>
+  </body>
+</html>
