@@ -8,17 +8,19 @@ import { Features } from '../../components/features/features';
 import { Team } from '../../components/team/team';
 import { Testimonial } from '../../components/testimonial/testimonial';
 import { Services } from '../../components/services/services';
+import { Videos } from '../../components/videos/videos';
 
 
 @Component({
   selector: 'page-home',
   standalone: true,
-  imports: [About, Blog, Booking, Carousel, Features, Services, Team, Testimonial],
+  imports: [About, Blog, Booking, Carousel, Features, Services, Videos, Team, Testimonial],
   template: `
     <page-carousel></page-carousel>
     <page-booking></page-booking>
     <page-about></page-about>
     <page-blog></page-blog>
+    <page-videos></page-videos>
     <page-services></page-services>
     <page-features></page-features>
     <page-team></page-team>
