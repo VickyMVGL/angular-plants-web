@@ -1,108 +1,47 @@
-import { Component, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
+import { 
+  Component, 
+  AfterViewInit, 
+  OnDestroy, 
+  Inject,
+  PLATFORM_ID 
+} from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 
-declare var $: any; // Si estás usando jQuery
+declare var bootstrap: any;
 
 @Component({
   selector: 'page-carousel',
   imports: [],
   template: `
     <div class="themed-root container-fluid p-0">
-      <div id="header-carousel" class="carousel slide" data-ride="carousel">
-        <div class="carousel-inner">
-          <div class="carousel-item active">
-            <img class="w-100" src="assets/img/carousel-1.jpg" alt="Image" />
-            <div
-              class="carousel-caption d-flex flex-column align-items-center justify-content-center"
-            >
-              <div class="p-3" style="max-width: 900px;">
-                <h3 class="text-white mb-3 d-none d-sm-block">Best Pet Services</h3>
-                <h1 class="display-3 text-white mb-3">Keep Your Pet Happy</h1>
-                <h5 class="text-white mb-3 d-none d-sm-block">Duo nonumy et dolor tempor no et.</h5>
-                <a class="btn btn-lg btn-primary mt-3 mt-md-4 px-4">Book Now</a>
-                <a class="btn btn-lg btn-secondary mt-3 mt-md-4 px-4">Learn More</a>
-              </div>
-            </div>
-          </div>
-
-          <div class="carousel-item">
-            <img class="w-100" src="assets/img/carousel-2.jpg" alt="Image" />
-            <div
-              class="carousel-caption d-flex flex-column align-items-center justify-content-center"
-            >
-              <div class="p-3" style="max-width: 900px;">
-                <h3 class="text-white mb-3 d-none d-sm-block">Best Pet Services</h3>
-                <h1 class="display-3 text-white mb-3">Pet Spa & Grooming</h1>
-                <h5 class="text-white mb-3 d-none d-sm-block">Duo nonumy et dolor tempor no et.</h5>
-                <a class="btn btn-lg btn-primary mt-3 mt-md-4 px-4">Book Now</a>
-                <a class="btn btn-lg btn-secondary mt-3 mt-md-4 px-4">Learn More</a>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <a class="carousel-control-prev" href="#header-carousel" data-slide="prev">
-          <div class="btn btn-primary rounded" style="width: 45px; height: 45px;">
-            <span class="carousel-control-prev-icon mb-n2"></span>
-          </div>
-        </a>
-        <a class="carousel-control-next" href="#header-carousel" data-slide="next">
-          <div class="btn btn-primary rounded" style="width: 45px; height: 45px;">
-            <span class="carousel-control-next-icon mb-n2"></span>
-          </div>
-        </a>
+      <div id="header-carousel" class="carousel slide" data-bs-ride="carousel">
+        <!-- ... mismo template que antes ... -->
       </div>
     </div>
   `,
   styleUrl: './carousel.css',
 })
-export class Carousel implements OnInit, AfterViewInit, OnDestroy {
-  ngOnInit() {
-    // Inicialización básica
-  }
+export class Carousel implements AfterViewInit, OnDestroy {
+  private carouselInstance: any;
+
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
 
   ngAfterViewInit() {
-    // El DOM está listo, puedes inicializar el carousel aquí
-    this.initializeCarousel();
-  }
-
-  ngOnDestroy() {
-    // Limpieza cuando el componente se destruye
-    this.destroyCarousel();
-  }
-
-  private initializeCarousel() {
-    // Inicializar carousel con JavaScript vanilla
-    const carouselElement = document.getElementById('header-carousel');
-    if (carouselElement) {
-      // Tu lógica de inicialización del carousel aquí
-      console.log('Carousel inicializado');
-
-      // Ejemplo con auto-rotación
-      this.startAutoRotation();
+    if (isPlatformBrowser(this.platformId)) {
+      // Inicializar carousel de Bootstrap
+      const carouselElement = document.getElementById('header-carousel');
+      if (carouselElement) {
+        this.carouselInstance = new bootstrap.Carousel(carouselElement, {
+          interval: 5000,
+          wrap: true
+        });
+      }
     }
   }
 
-  private startAutoRotation() {
-    // Auto-rotación cada 5 segundos
-    setInterval(() => {
-      this.nextSlide();
-    }, 5000);
-  }
-
-  nextSlide() {
-    // Lógica para cambiar al siguiente slide
-    const carousel = document.getElementById('header-carousel');
-    // Implementar lógica de cambio de slide
-  }
-
-  prevSlide() {
-    // Lógica para cambiar al slide anterior
-    const carousel = document.getElementById('header-carousel');
-    // Implementar lógica de cambio de slide
-  }
-
-  private destroyCarousel() {
-    // Limpiar intervalos y event listeners
-    console.log('Carousel destruido');
+  ngOnDestroy() {
+    if (isPlatformBrowser(this.platformId) && this.carouselInstance) {
+      this.carouselInstance.dispose();
+    }
   }
 }

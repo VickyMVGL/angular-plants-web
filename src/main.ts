@@ -4,17 +4,14 @@ import { App } from './app/app';
 import { appConfig } from './app/app.config';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
-/* --- restoreSavedTheme (mantén tu bloque actual) --- */
+
 (function restoreSavedTheme() {
-  /* ... tu lógica actual ... */
 })();
 
-/* --- construir providers correctamente --- */
 const existingProviders = Array.isArray((appConfig as any)?.providers)
   ? (appConfig as any).providers
   : [];
 
-// bootstrap de la app con HttpClient moderno
 bootstrapApplication(App, {
   ...(appConfig || {}),
   providers: [

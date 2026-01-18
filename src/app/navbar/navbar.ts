@@ -32,7 +32,7 @@ import { AuthService } from '../services/auth.service';
           <!-- Si hay usuario -->
           <div *ngIf="auth.currentUser()" class="btn-group">
             <button class="btn btn-success dropdown-toggle" type="button" (click)="toggleDropdown($event)">
-              {{ auth.currentUser()?.username }}
+ 
             </button>
             <ul class="dropdown-menu dropdown-menu-end" [class.show]="dropdownOpen()">
               <li *ngIf="auth.isAdmin()">
