@@ -13,6 +13,8 @@ interface VideoItem {
   isPlaying: boolean;
   audioNames: string[];
   subtitleNames: string[];
+  duration: number;
+  currentTime: number;
 }
 
 @Component({
@@ -46,7 +48,12 @@ interface VideoItem {
           </div>
           
           <div class="video-wrapper">
-            <video #videoEl width="100%" height="250" preload="metadata">
+            <video #videoEl 
+                   width="100%" 
+                   height="250" 
+                   preload="metadata"
+                   (timeupdate)="onTimeUpdate(i, $event)"
+                   (loadedmetadata)="onLoadedMetadata(i, $event)">
               <source [src]="v.src" type="video/mp4">
               Tu navegador no soporta videos HTML5.
               
@@ -61,12 +68,53 @@ interface VideoItem {
               </ng-container>
             </video>
             
+            <!-- Barra de progreso -->
+            <div class="progress-bar-container">
+              <div class="progress-bar" (click)="seekVideo(i, $event)">
+                <div class="progress-fill" [style.width.%]="(v.currentTime / v.duration) * 100"></div>
+              </div>
+              <div class="time-display">
+                <span>{{ formatTime(v.currentTime) }}</span>
+                <span>{{ formatTime(v.duration) }}</span>
+              </div>
+            </div>
+            
             <!-- Controles de video personalizados -->
             <div class="video-controls">
-              <button class="control-btn play-btn" (click)="togglePlay(i, v)">
-                {{ v.isPlaying ? '⏸️ Pausar' : '▶️ Reproducir' }}
-              </button>
+              <!-- Controles principales -->
+              <div class="main-controls">
+                <button class="control-btn" (click)="seekToStart(i)" title="Ir al inicio">
+                  ⏮️
+                </button>
+                <button class="control-btn" (click)="seekBackward(i, 10)" title="Retroceder 10s">
+                  ⏪
+                </button>
+                <button class="control-btn play-btn" (click)="togglePlay(i, v)">
+                  {{ v.isPlaying ? '⏸️' : '▶️' }}
+                </button>
+                <button class="control-btn" (click)="seekForward(i, 10)" title="Adelantar 10s">
+                  ⏩
+                </button>
+                <button class="control-btn" (click)="seekToEnd(i)" title="Ir al final">
+                  ⏭️
+                </button>
+              </div>
               
+              <!-- Controles de volumen -->
+              <div class="volume-control">
+                <button class="control-btn" (click)="toggleMute(i)" title="Silenciar">
+                  {{ isMuted(i) ? '🔇' : '🔊' }}
+                </button>
+                <input type="range" 
+                       min="0" 
+                       max="1" 
+                       step="0.1" 
+                       [value]="getVolume(i)"
+                       (input)="changeVolume(i, $event)"
+                       class="volume-slider">
+              </div>
+              
+              <!-- Selectores -->
               <div class="selectors">
                 <!-- Selector de subtítulos -->
                 <div class="selector-group" *ngIf="v.subtitles.length > 0">
@@ -108,6 +156,10 @@ interface VideoItem {
               <div class="info-item" *ngIf="v.subtitles.length > 0">
                 <span class="info-label">Subtítulos:</span>
                 <span class="info-value">{{ v.subtitles.length }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Duración:</span>
+                <span class="info-value">{{ formatTime(v.duration) }}</span>
               </div>
             </div>
           </div>
@@ -412,6 +464,8 @@ export class Videos {
     }
   }
 
+  // NUEVOS MÉTODOS PARA CONTROLES DE REPRODUCCIÓN
+
   togglePlay(index: number, item: VideoItem): void {
     const videoElement = this.videoElements.toArray()[index]?.nativeElement;
     if (!videoElement) return;
@@ -425,6 +479,121 @@ export class Videos {
     }
   }
 
+  // Adelantar 10 segundos
+  seekForward(index: number, seconds: number = 10): void {
+    const videoElement = this.videoElements.toArray()[index]?.nativeElement;
+    if (!videoElement) return;
+
+    const newTime = Math.min(videoElement.currentTime + seconds, videoElement.duration);
+    videoElement.currentTime = newTime;
+    this.videos[this.currentIndex + index].currentTime = newTime;
+  }
+
+  // Retroceder 10 segundos
+  seekBackward(index: number, seconds: number = 10): void {
+    const videoElement = this.videoElements.toArray()[index]?.nativeElement;
+    if (!videoElement) return;
+
+    const newTime = Math.max(videoElement.currentTime - seconds, 0);
+    videoElement.currentTime = newTime;
+    this.videos[this.currentIndex + index].currentTime = newTime;
+  }
+
+  // Ir al inicio (0 segundos)
+  seekToStart(index: number): void {
+    const videoElement = this.videoElements.toArray()[index]?.nativeElement;
+    if (!videoElement) return;
+
+    videoElement.currentTime = 0;
+    this.videos[this.currentIndex + index].currentTime = 0;
+  }
+
+  // Ir al final (duración total)
+  seekToEnd(index: number): void {
+    const videoElement = this.videoElements.toArray()[index]?.nativeElement;
+    if (!videoElement) return;
+
+    videoElement.currentTime = videoElement.duration;
+    this.videos[this.currentIndex + index].currentTime = videoElement.duration;
+  }
+
+  // Buscar posición específica en la barra de progreso
+  seekVideo(index: number, event: MouseEvent): void {
+    const videoElement = this.videoElements.toArray()[index]?.nativeElement;
+    const progressBar = event.currentTarget as HTMLElement;
+    
+    if (!videoElement || !progressBar) return;
+
+    const rect = progressBar.getBoundingClientRect();
+    const percent = (event.clientX - rect.left) / rect.width;
+    const newTime = percent * videoElement.duration;
+    
+    videoElement.currentTime = newTime;
+    this.videos[this.currentIndex + index].currentTime = newTime;
+  }
+
+  // Control de volumen
+  changeVolume(index: number, event: Event): void {
+    const videoElement = this.videoElements.toArray()[index]?.nativeElement;
+    const input = event.target as HTMLInputElement;
+    
+    if (!videoElement) return;
+    
+    videoElement.volume = parseFloat(input.value);
+  }
+
+  toggleMute(index: number): void {
+    const videoElement = this.videoElements.toArray()[index]?.nativeElement;
+    if (!videoElement) return;
+    
+    videoElement.muted = !videoElement.muted;
+  }
+
+  isMuted(index: number): boolean {
+    const videoElement = this.videoElements.toArray()[index]?.nativeElement;
+    return videoElement ? videoElement.muted : false;
+  }
+
+  getVolume(index: number): number {
+    const videoElement = this.videoElements.toArray()[index]?.nativeElement;
+    return videoElement ? videoElement.volume : 1;
+  }
+
+  // Actualizar tiempo actual
+  onTimeUpdate(index: number, event: Event): void {
+    const videoElement = event.target as HTMLVideoElement;
+    const globalIndex = this.currentIndex + index;
+    
+    if (globalIndex < this.videos.length) {
+      this.videos[globalIndex].currentTime = videoElement.currentTime;
+      
+      // Si el video llegó al final, marcar como no reproduciendo
+      if (videoElement.currentTime >= videoElement.duration) {
+        this.videos[globalIndex].isPlaying = false;
+      }
+    }
+  }
+
+  // Cuando se carga la metadata del video
+  onLoadedMetadata(index: number, event: Event): void {
+    const videoElement = event.target as HTMLVideoElement;
+    const globalIndex = this.currentIndex + index;
+    
+    if (globalIndex < this.videos.length) {
+      this.videos[globalIndex].duration = videoElement.duration;
+    }
+  }
+
+  // Formatear tiempo (MM:SS)
+  formatTime(seconds: number): string {
+    if (isNaN(seconds) || seconds === 0) return '00:00';
+    
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  }
+
+  // MÉTODOS EXISTENTES (sin cambios)
   changeSubtitle(videoIndex: number, subtitleIndex: number): void {
     const videoElement = this.videoElements.toArray()[videoIndex]?.nativeElement;
     if (!videoElement) return;
@@ -442,8 +611,6 @@ export class Videos {
 
   changeAudio(videoIndex: number, audioIndex: number): void {
     console.log(`Cambiar audio del video ${videoIndex} a track ${audioIndex}`);
-    // Nota: Cambiar audio requiere una implementación más compleja
-    // ya que HTML5 video no soporta múltiples pistas de audio nativamente
   }
 
   openModal(): void {
@@ -462,12 +629,11 @@ export class Videos {
     if (!file) return;
 
     if (type === 'video') {
-      // Validar video
       if (!file.type.startsWith('video/')) {
         this.errors.video = 'Por favor selecciona un archivo de video válido';
         return;
       }
-      if (file.size > 100 * 1024 * 1024) { // 100MB
+      if (file.size > 100 * 1024 * 1024) {
         this.errors.video = 'El archivo no debe exceder los 100MB';
         return;
       }
@@ -480,13 +646,11 @@ export class Videos {
     const file = event.target.files[0];
     if (!file) return;
 
-    // Validar audio
     if (!file.type.startsWith('audio/')) {
       alert('Por favor selecciona un archivo de audio válido');
       return;
     }
 
-    // Asegurar que tenemos un array de tamaño 2
     if (!this.newVideo.audios[index]) {
       this.newVideo.audios[index] = file;
     }
@@ -496,13 +660,11 @@ export class Videos {
     const file = event.target.files[0];
     if (!file) return;
 
-    // Validar subtítulo
     if (file.type !== 'text/vtt' && !file.name.endsWith('.vtt')) {
       alert('Por favor selecciona un archivo VTT válido');
       return;
     }
 
-    // Asegurar que tenemos un array de tamaño 2
     if (!this.newVideo.subtitles[index]) {
       this.newVideo.subtitles[index] = file;
     }
@@ -523,7 +685,6 @@ export class Videos {
   }
 
   addVideo(): void {
-    // Validar
     if (!this.newVideo.video) {
       this.errors.video = 'Debes seleccionar un video principal';
       return;
@@ -531,19 +692,15 @@ export class Videos {
 
     this.isAdding = true;
 
-    // Simular procesamiento
     setTimeout(() => {
-      // Crear URLs para los archivos
       const videoURL = URL.createObjectURL(this.newVideo.video);
       
-      // Filtrar archivos nulos y crear URLs
       const validAudios = this.newVideo.audios.filter((a: File | null) => a);
       const validSubtitles = this.newVideo.subtitles.filter((s: File | null) => s);
       
       const audioURLs = validAudios.map((audio: File) => URL.createObjectURL(audio));
       const subtitleURLs = validSubtitles.map((subtitle: File) => URL.createObjectURL(subtitle));
 
-      // Agregar el video a la lista
       this.videos.push({
         id: this.videoCounter++,
         src: videoURL,
@@ -554,15 +711,15 @@ export class Videos {
         selectedSubtitle: subtitleURLs.length > 0 ? 0 : -1,
         isPlaying: false,
         audioNames: validAudios.map((a: File) => a.name),
-        subtitleNames: validSubtitles.map((s: File) => s.name.replace('.vtt', ''))
+        subtitleNames: validSubtitles.map((s: File) => s.name.replace('.vtt', '')),
+        duration: 0,
+        currentTime: 0
       });
 
-      // Limpiar y cerrar
       this.resetNewVideo();
       this.isAdding = false;
       this.closeModal();
       
-      // Mostrar mensaje de éxito
       alert('✅ Video agregado exitosamente!');
     }, 1000);
   }
@@ -571,8 +728,8 @@ export class Videos {
     this.newVideo = {
       video: null,
       title: '',
-      audios: [null, null], // Array de tamaño 2
-      subtitles: [null, null] // Array de tamaño 2
+      audios: [null, null],
+      subtitles: [null, null]
     };
   }
 
@@ -602,7 +759,6 @@ export class Videos {
     return subtitles.filter((s: any) => !!s).length;
   }
 
-  // Limpiar URLs cuando el componente se destruye
   ngOnDestroy() {
     this.videos.forEach(video => {
       URL.revokeObjectURL(video.src);
