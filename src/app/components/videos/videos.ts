@@ -92,72 +92,86 @@ interface VideoItem {
 
             <!-- Controles de video personalizados -->
             <div class="video-controls">
-              <!-- Controles principales -->
-              <div class="main-controls">
-                <button class="control-btn" (click)="seekToStart(i)" title="Ir al inicio">
-                  ⏮️
-                </button>
-                <button class="control-btn" (click)="seekBackward(i, 10)" title="Retroceder 10s">
-                  ⏪
-                </button>
-                <button class="control-btn play-btn" (click)="togglePlay(i, v)">
-                  {{ v.isPlaying ? '⏸️' : '▶️' }}
-                </button>
-                <button class="control-btn" (click)="seekForward(i, 10)" title="Adelantar 10s">
-                  ⏩
-                </button>
-                <button class="control-btn" (click)="seekToEnd(i)" title="Ir al final">⏭️</button>
+              <!-- Fila superior: botones principales (mantener donde están) -->
+              <div class="controls-top">
+                <div class="main-controls">
+                  <button class="control-btn" (click)="seekToStart(i)" title="Ir al inicio">
+                    ⏮️
+                  </button>
+                  <button class="control-btn" (click)="seekBackward(i, 10)" title="Retroceder 10s">
+                    ⏪
+                  </button>
+                  <button class="control-btn play-btn" (click)="togglePlay(i, v)">
+                    {{ v.isPlaying ? '⏸️' : '▶️' }}
+                  </button>
+                  <button class="control-btn" (click)="seekForward(i, 10)" title="Adelantar 10s">
+                    ⏩
+                  </button>
+                  <button class="control-btn" (click)="seekToEnd(i)" title="Ir al final">⏭️</button>
+                </div>
               </div>
 
-              <!-- Controles de volumen -->
-              <div class="volume-control">
-                <button class="control-btn" (click)="toggleMute(i)" title="Silenciar">
-                  {{ isMuted(i) ? '🔇' : '🔊' }}
-                </button>
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.1"
-                  [value]="getVolume(i)"
-                  (input)="changeVolume(i, $event)"
-                  class="volume-slider"
-                />
-              </div>
+              <!-- Fila inferior: volumen, selectores y fullscreen -->
+              <div class="controls-bottom">
+                <!-- Controles de volumen -->
+                <div class="volume-control">
+                  <button class="control-btn" (click)="toggleMute(i)" title="Silenciar">
+                    {{ isMuted(i) ? '🔇' : '🔊' }}
+                  </button>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.1"
+                    [value]="getVolume(i)"
+                    (input)="changeVolume(i, $event)"
+                    class="volume-slider"
+                  />
+                </div>
 
-              <!-- Selectores -->
-              <div class="selectors">
-                <!-- Selector de subtítulos -->
-                <div class="selector-group" *ngIf="v.subtitles.length > 0">
-                  <label>Subtítulos:</label>
-                  <select
-                    class="form-select"
-                    [(ngModel)]="v.selectedSubtitle"
-                    (change)="changeSubtitle(i, v.selectedSubtitle)"
-                  >
-                    <option [value]="-1">Sin subtítulos</option>
-                    <option
-                      *ngFor="let subtitleName of v.subtitleNames; let idx = index"
-                      [value]="idx"
+                <!-- Selectores -->
+                <div class="selectors">
+                  <!-- Selector de subtítulos -->
+                  <div class="selector-group" *ngIf="v.subtitles.length > 0">
+                    <label>Subtítulos:</label>
+                    <select
+                      class="form-select"
+                      [(ngModel)]="v.selectedSubtitle"
+                      (change)="changeSubtitle(i, v.selectedSubtitle)"
                     >
-                      {{ subtitleName || 'Subtítulo ' + (idx + 1) }}
-                    </option>
-                  </select>
+                      <option [value]="-1">Sin subtítulos</option>
+                      <option
+                        *ngFor="let subtitleName of v.subtitleNames; let idx = index"
+                        [value]="idx"
+                      >
+                        {{ subtitleName || 'Subtítulo ' + (idx + 1) }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <!-- Selector de audio -->
+                  <div class="selector-group" *ngIf="v.audios.length > 0">
+                    <label>Pista de Audio:</label>
+                    <select
+                      class="form-select"
+                      [(ngModel)]="v.selectedAudio"
+                      (change)="changeAudio(i, v.selectedAudio)"
+                    >
+                      <option *ngFor="let audioName of v.audioNames; let idx = index" [value]="idx">
+                        {{ audioName || 'Audio ' + (idx + 1) }}
+                      </option>
+                    </select>
+                  </div>
                 </div>
 
-                <!-- Selector de audio -->
-                <div class="selector-group" *ngIf="v.audios.length > 0">
-                  <label>Pista de Audio:</label>
-                  <select
-                    class="form-select"
-                    [(ngModel)]="v.selectedAudio"
-                    (change)="changeAudio(i, v.selectedAudio)"
-                  >
-                    <option *ngFor="let audioName of v.audioNames; let idx = index" [value]="idx">
-                      {{ audioName || 'Audio ' + (idx + 1) }}
-                    </option>
-                  </select>
-                </div>
+                <!-- Botón fullscreen (segunda fila) -->
+                <button
+                  class="control-btn fullscreen-btn"
+                  (click)="toggleFullscreen(i)"
+                  title="Pantalla completa"
+                >
+                  ⛶
+                </button>
               </div>
             </div>
 
@@ -989,5 +1003,32 @@ export class Videos {
       video.audios.forEach((url) => URL.revokeObjectURL(url));
       video.subtitles.forEach((url) => URL.revokeObjectURL(url));
     });
+  }
+
+  // Añadido: abrir/cerrar fullscreen sobre el elemento <video>
+  toggleFullscreen(index: number): void {
+    const videoElement = this.videoElements.toArray()[index]?.nativeElement;
+    if (!videoElement) return;
+
+    const doc: any = document;
+    const isFullscreen = !!(
+      doc.fullscreenElement ||
+      doc.webkitFullscreenElement ||
+      doc.mozFullScreenElement ||
+      doc.msFullscreenElement
+    );
+
+    if (isFullscreen) {
+      if (doc.exitFullscreen) doc.exitFullscreen().catch(() => {});
+      else if (doc.webkitExitFullscreen) doc.webkitExitFullscreen();
+      else if (doc.mozCancelFullScreen) doc.mozCancelFullScreen();
+      else if (doc.msExitFullscreen) doc.msExitFullscreen();
+    } else {
+      const el: any = videoElement;
+      if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
+      else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+      else if (el.mozRequestFullScreen) el.mozRequestFullScreen();
+      else if (el.msRequestFullscreen) el.msRequestFullscreen();
+    }
   }
 }
