@@ -24,18 +24,23 @@ interface VideoItem {
   template: `
     <div class="videos-container">
       <h2 class="section-title">Galería de Videos</h2>
-      
+
       <!-- Controles de navegación -->
       <div class="carousel-controls">
         <button class="nav-btn prev-btn" (click)="prev()" [disabled]="currentIndex === 0">
           ‹ Anterior
         </button>
-        
+
         <div class="carousel-counter">
-          {{ currentIndex + 1 }} - {{ Math.min(currentIndex + 3, videos.length) }} de {{ videos.length }}
+          {{ currentIndex + 1 }} - {{ Math.min(currentIndex + 3, videos.length) }} de
+          {{ videos.length }}
         </div>
-        
-        <button class="nav-btn next-btn" (click)="next()" [disabled]="currentIndex + 3 >= videos.length">
+
+        <button
+          class="nav-btn next-btn"
+          (click)="next()"
+          [disabled]="currentIndex + 3 >= videos.length"
+        >
           Siguiente ›
         </button>
       </div>
@@ -46,39 +51,45 @@ interface VideoItem {
           <div class="video-header">
             <h3>{{ v.title || 'Video ' + v.id }}</h3>
           </div>
-          
+
           <div class="video-wrapper">
-            <video #videoEl 
-                   width="100%" 
-                   height="250" 
-                   preload="metadata"
-                   (timeupdate)="onTimeUpdate(i, $event)"
-                   (loadedmetadata)="onLoadedMetadata(i, $event)">
-              <source [src]="v.src" type="video/mp4">
+            <video
+              #videoEl
+              width="100%"
+              height="250"
+              preload="metadata"
+              (timeupdate)="onTimeUpdate(i, $event)"
+              (loadedmetadata)="onLoadedMetadata(i, $event)"
+            >
+              <source [src]="v.src" type="video/mp4" />
               Tu navegador no soporta videos HTML5.
-              
+
               <!-- Subtítulos -->
               <ng-container *ngFor="let subtitle of v.subtitles; let subIndex = index">
-                <track 
-                  kind="subtitles" 
-                  [src]="subtitle" 
-                  [srclang]="'es'" 
+                <track
+                  kind="subtitles"
+                  [src]="subtitle"
+                  [srclang]="'es'"
                   [label]="v.subtitleNames[subIndex] || 'Subtítulo ' + (subIndex + 1)"
-                  [default]="subIndex === v.selectedSubtitle">
+                  [default]="subIndex === v.selectedSubtitle"
+                />
               </ng-container>
             </video>
-            
+
             <!-- Barra de progreso -->
             <div class="progress-bar-container">
               <div class="progress-bar" (click)="seekVideo(i, $event)">
-                <div class="progress-fill" [style.width.%]="(v.currentTime / v.duration) * 100"></div>
+                <div
+                  class="progress-fill"
+                  [style.width.%]="(v.currentTime / v.duration) * 100"
+                ></div>
               </div>
               <div class="time-display">
                 <span>{{ formatTime(v.currentTime) }}</span>
                 <span>{{ formatTime(v.duration) }}</span>
               </div>
             </div>
-            
+
             <!-- Controles de video personalizados -->
             <div class="video-controls">
               <!-- Controles principales -->
@@ -95,58 +106,61 @@ interface VideoItem {
                 <button class="control-btn" (click)="seekForward(i, 10)" title="Adelantar 10s">
                   ⏩
                 </button>
-                <button class="control-btn" (click)="seekToEnd(i)" title="Ir al final">
-                  ⏭️
-                </button>
+                <button class="control-btn" (click)="seekToEnd(i)" title="Ir al final">⏭️</button>
               </div>
-              
+
               <!-- Controles de volumen -->
               <div class="volume-control">
                 <button class="control-btn" (click)="toggleMute(i)" title="Silenciar">
                   {{ isMuted(i) ? '🔇' : '🔊' }}
                 </button>
-                <input type="range" 
-                       min="0" 
-                       max="1" 
-                       step="0.1" 
-                       [value]="getVolume(i)"
-                       (input)="changeVolume(i, $event)"
-                       class="volume-slider">
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.1"
+                  [value]="getVolume(i)"
+                  (input)="changeVolume(i, $event)"
+                  class="volume-slider"
+                />
               </div>
-              
+
               <!-- Selectores -->
               <div class="selectors">
                 <!-- Selector de subtítulos -->
                 <div class="selector-group" *ngIf="v.subtitles.length > 0">
                   <label>Subtítulos:</label>
-                  <select 
-                    class="form-select" 
+                  <select
+                    class="form-select"
                     [(ngModel)]="v.selectedSubtitle"
-                    (change)="changeSubtitle(i, v.selectedSubtitle)">
+                    (change)="changeSubtitle(i, v.selectedSubtitle)"
+                  >
                     <option [value]="-1">Sin subtítulos</option>
-                    <option *ngFor="let subtitleName of v.subtitleNames; let idx = index" 
-                            [value]="idx">
+                    <option
+                      *ngFor="let subtitleName of v.subtitleNames; let idx = index"
+                      [value]="idx"
+                    >
                       {{ subtitleName || 'Subtítulo ' + (idx + 1) }}
                     </option>
                   </select>
                 </div>
-                
+
                 <!-- Selector de audio -->
                 <div class="selector-group" *ngIf="v.audios.length > 0">
                   <label>Pista de Audio:</label>
-                  <select 
-                    class="form-select" 
+                  <select
+                    class="form-select"
                     [(ngModel)]="v.selectedAudio"
-                    (change)="changeAudio(i, v.selectedAudio)">
-                    <option *ngFor="let audioName of v.audioNames; let idx = index" 
-                            [value]="idx">
+                    (change)="changeAudio(i, v.selectedAudio)"
+                  >
+                    <option *ngFor="let audioName of v.audioNames; let idx = index" [value]="idx">
                       {{ audioName || 'Audio ' + (idx + 1) }}
                     </option>
                   </select>
                 </div>
               </div>
             </div>
-            
+
             <!-- Información del video -->
             <div class="video-info">
               <div class="info-item" *ngIf="v.audios.length > 0">
@@ -173,35 +187,35 @@ interface VideoItem {
 
       <!-- Botón para agregar video -->
       <div class="add-video-section">
-        <button class="add-btn" (click)="openModal()">
-          <span>+</span> Agregar Video
-        </button>
+        <button class="add-btn" (click)="openModal()"><span>+</span> Agregar Video</button>
       </div>
 
       <!-- Modal para agregar video -->
       <div class="modal-backdrop" *ngIf="showModal" (click)="closeModal()"></div>
-      
+
       <div class="modal" [class.show]="showModal">
         <div class="modal-content" (click)="$event.stopPropagation()">
           <div class="modal-header">
             <h3>Agregar Nuevo Video</h3>
-            <p class="modal-subtitle">Selecciona 1 video, hasta 2 pistas de audio y 2 archivos de subtítulos</p>
+            <p class="modal-subtitle">
+              Selecciona 1 video, hasta 2 pistas de audio y 2 archivos de subtítulos
+            </p>
             <button class="close-btn" (click)="closeModal()">&times;</button>
           </div>
-          
+
           <div class="modal-body">
             <!-- Video principal (OBLIGATORIO) -->
             <div class="form-group">
               <label class="form-label required">Video Principal</label>
               <p class="form-help">Formato: MP4, WebM, MOV. Máx: 100MB</p>
               <div class="file-upload-area" [class.has-file]="newVideo.video">
-                <input 
-                  type="file" 
-                  class="file-input" 
-                  accept="video/*" 
+                <input
+                  type="file"
+                  class="file-input"
+                  accept="video/*"
                   (change)="onFileChange($event, 'video')"
                   #videoInput
-                >
+                />
                 <div class="upload-placeholder" *ngIf="!newVideo.video">
                   <i class="upload-icon">📹</i>
                   <p>Haz clic o arrastra un video aquí</p>
@@ -228,13 +242,13 @@ interface VideoItem {
             <!-- Título del video -->
             <div class="form-group">
               <label class="form-label">Título del Video</label>
-              <input 
-                type="text" 
-                class="form-control" 
+              <input
+                type="text"
+                class="form-control"
                 [(ngModel)]="newVideo.title"
                 placeholder="Ej: Tutorial de Angular - Introducción"
                 maxlength="50"
-              >
+              />
               <div class="char-counter">{{ newVideo.title?.length || 0 }}/50</div>
             </div>
 
@@ -248,13 +262,13 @@ interface VideoItem {
               <label class="form-label">Pista de Audio 1</label>
               <p class="form-help">Formato: MP3, WAV, OGG</p>
               <div class="file-upload-area" [class.has-file]="newVideo.audios[0]">
-                <input 
-                  type="file" 
-                  class="file-input" 
-                  accept="audio/*" 
+                <input
+                  type="file"
+                  class="file-input"
+                  accept="audio/*"
                   (change)="onAudioChange($event, 0)"
                   #audioInput1
-                >
+                />
                 <div class="upload-placeholder" *ngIf="!newVideo.audios[0]">
                   <i class="upload-icon">🔊</i>
                   <p>Audio opcional 1</p>
@@ -280,14 +294,14 @@ interface VideoItem {
               <label class="form-label">Pista de Audio 2</label>
               <p class="form-help">Formato: MP3, WAV, OGG</p>
               <div class="file-upload-area" [class.has-file]="newVideo.audios[1]">
-                <input 
-                  type="file" 
-                  class="file-input" 
-                  accept="audio/*" 
+                <input
+                  type="file"
+                  class="file-input"
+                  accept="audio/*"
                   (change)="onAudioChange($event, 1)"
                   #audioInput2
-                  [disabled]="newVideo.audios.length >= 2 && !newVideo.audios[1]"
-                >
+                  [disabled]="audioCount >= 2 && !newVideo.audios[1]"
+                />
                 <div class="upload-placeholder" *ngIf="!newVideo.audios[1]">
                   <i class="upload-icon">🔊</i>
                   <p>Audio opcional 2</p>
@@ -321,13 +335,13 @@ interface VideoItem {
               <label class="form-label">Archivo de Subtítulos 1</label>
               <p class="form-help">Formato: .vtt (WebVTT)</p>
               <div class="file-upload-area" [class.has-file]="newVideo.subtitles[0]">
-                <input 
-                  type="file" 
-                  class="file-input" 
-                  accept=".vtt,text/vtt" 
+                <input
+                  type="file"
+                  class="file-input"
+                  accept=".vtt,text/vtt"
                   (change)="onSubtitleChange($event, 0)"
                   #subtitleInput1
-                >
+                />
                 <div class="upload-placeholder" *ngIf="!newVideo.subtitles[0]">
                   <i class="upload-icon">📝</i>
                   <p>Subtítulos opcional 1</p>
@@ -353,14 +367,14 @@ interface VideoItem {
               <label class="form-label">Archivo de Subtítulos 2</label>
               <p class="form-help">Formato: .vtt (WebVTT)</p>
               <div class="file-upload-area" [class.has-file]="newVideo.subtitles[1]">
-                <input 
-                  type="file" 
-                  class="file-input" 
-                  accept=".vtt,text/vtt" 
+                <input
+                  type="file"
+                  class="file-input"
+                  accept=".vtt,text/vtt"
                   (change)="onSubtitleChange($event, 1)"
                   #subtitleInput2
                   [disabled]="newVideo.subtitles.length >= 2 && !newVideo.subtitles[1]"
-                >
+                />
                 <div class="upload-placeholder" *ngIf="!newVideo.subtitles[1]">
                   <i class="upload-icon">📝</i>
                   <p>Subtítulos opcional 2</p>
@@ -403,11 +417,9 @@ interface VideoItem {
           </div>
 
           <div class="modal-footer">
-            <button class="btn btn-secondary" (click)="closeModal()">
-              Cancelar
-            </button>
-            <button 
-              class="btn btn-primary" 
+            <button class="btn btn-secondary" (click)="closeModal()">Cancelar</button>
+            <button
+              class="btn btn-primary"
               (click)="addVideo()"
               [disabled]="!newVideo.video || isAdding"
             >
@@ -419,7 +431,7 @@ interface VideoItem {
       </div>
     </div>
   `,
-  styleUrls: ['./videos.css']
+  styleUrls: ['./videos.css'],
 })
 export class Videos {
   @ViewChildren('videoEl') videoElements!: QueryList<ElementRef<HTMLVideoElement>>;
@@ -430,17 +442,20 @@ export class Videos {
   videoCounter = 1;
   isAdding = false;
 
+  // NUEVO: mapa de elementos de audio por id de video
+  private audioElements: Map<number, HTMLAudioElement> = new Map();
+
   newVideo: any = {
     video: null,
     title: '',
-    audios: [], // Máximo 2
-    subtitles: [] // Máximo 2
+    audios: [null, null], // Máximo 2
+    subtitles: [null, null], // Máx 2
   };
 
   errors = {
     video: '',
     audio: '',
-    subtitle: ''
+    subtitle: '',
   };
 
   // Propiedad Math para usar en template
@@ -470,13 +485,68 @@ export class Videos {
     const videoElement = this.videoElements.toArray()[index]?.nativeElement;
     if (!videoElement) return;
 
+    const globalIndex = this.currentIndex + index;
+
+    // Si el video tiene pistas de audio adjuntas, usamos un HTMLAudioElement para reproducir audio
+    const hasExternalAudio = item.audios && item.audios.length > 0 && item.selectedAudio >= 0;
+
     if (videoElement.paused) {
-      videoElement.play();
+      // Reproducir
+      // Mantener el video silenciado si hay audio externo para evitar solapamiento
+      videoElement.muted = hasExternalAudio;
+      videoElement.play().catch(() => {
+        /* ignore play errors */
+      });
+
+      if (hasExternalAudio) {
+        const audio = this.createOrGetAudio(item);
+        if (!audio) {
+          item.isPlaying = true;
+          return;
+        }
+        // asegurar sincronía al iniciar
+        try {
+          audio.currentTime = videoElement.currentTime;
+        } catch {
+          /* ignore */
+        }
+        audio.volume = videoElement.volume;
+        audio.play().catch(() => {
+          /* ignore */
+        });
+      }
+
       item.isPlaying = true;
     } else {
+      // Pausar ambos
       videoElement.pause();
+      const audio = this.audioElements.get(item.id);
+      if (audio) audio.pause();
       item.isPlaying = false;
     }
+  }
+
+  // helper: crea o reutiliza el elemento audio para la pista seleccionada
+  private createOrGetAudio(videoItem: VideoItem): HTMLAudioElement | null {
+    if (!videoItem.audios || videoItem.audios.length === 0) return null;
+    const src = videoItem.audios[videoItem.selectedAudio];
+    if (!src) return null;
+
+    let audio = this.audioElements.get(videoItem.id);
+    if (audio) {
+      // si la src actual es distinta, reemplazarla
+      if (!audio.src || !audio.src.endsWith(src)) {
+        audio.pause();
+        audio.src = src;
+        audio.load();
+      }
+    } else {
+      audio = new Audio(src);
+      audio.preload = 'auto';
+      this.audioElements.set(videoItem.id, audio);
+    }
+
+    return audio;
   }
 
   // Adelantar 10 segundos
@@ -486,7 +556,19 @@ export class Videos {
 
     const newTime = Math.min(videoElement.currentTime + seconds, videoElement.duration);
     videoElement.currentTime = newTime;
-    this.videos[this.currentIndex + index].currentTime = newTime;
+    const globalIndex = this.currentIndex + index;
+    this.videos[globalIndex].currentTime = newTime;
+
+    // sincronizar audio si existe
+    const item = this.videos[globalIndex];
+    const audio = this.audioElements.get(item.id);
+    if (audio) {
+      try {
+        audio.currentTime = newTime;
+      } catch {
+        /* ignore */
+      }
+    }
   }
 
   // Retroceder 10 segundos
@@ -496,7 +578,18 @@ export class Videos {
 
     const newTime = Math.max(videoElement.currentTime - seconds, 0);
     videoElement.currentTime = newTime;
-    this.videos[this.currentIndex + index].currentTime = newTime;
+    const globalIndex = this.currentIndex + index;
+    this.videos[globalIndex].currentTime = newTime;
+
+    const item = this.videos[globalIndex];
+    const audio = this.audioElements.get(item.id);
+    if (audio) {
+      try {
+        audio.currentTime = newTime;
+      } catch {
+        /* ignore */
+      }
+    }
   }
 
   // Ir al inicio (0 segundos)
@@ -506,6 +599,16 @@ export class Videos {
 
     videoElement.currentTime = 0;
     this.videos[this.currentIndex + index].currentTime = 0;
+
+    const item = this.videos[this.currentIndex + index];
+    const audio = this.audioElements.get(item.id);
+    if (audio) {
+      try {
+        audio.currentTime = 0;
+      } catch {
+        /* ignore */
+      }
+    }
   }
 
   // Ir al final (duración total)
@@ -515,61 +618,122 @@ export class Videos {
 
     videoElement.currentTime = videoElement.duration;
     this.videos[this.currentIndex + index].currentTime = videoElement.duration;
+
+    const item = this.videos[this.currentIndex + index];
+    const audio = this.audioElements.get(item.id);
+    if (audio) {
+      try {
+        audio.currentTime = videoElement.duration;
+      } catch {
+        /* ignore */
+      }
+    }
   }
 
   // Buscar posición específica en la barra de progreso
   seekVideo(index: number, event: MouseEvent): void {
     const videoElement = this.videoElements.toArray()[index]?.nativeElement;
     const progressBar = event.currentTarget as HTMLElement;
-    
+
     if (!videoElement || !progressBar) return;
 
     const rect = progressBar.getBoundingClientRect();
     const percent = (event.clientX - rect.left) / rect.width;
     const newTime = percent * videoElement.duration;
-    
+
     videoElement.currentTime = newTime;
-    this.videos[this.currentIndex + index].currentTime = newTime;
+    const globalIndex = this.currentIndex + index;
+    this.videos[globalIndex].currentTime = newTime;
+
+    const item = this.videos[globalIndex];
+    const audio = this.audioElements.get(item.id);
+    if (audio) {
+      try {
+        audio.currentTime = newTime;
+      } catch {
+        /* ignore */
+      }
+    }
   }
 
   // Control de volumen
   changeVolume(index: number, event: Event): void {
     const videoElement = this.videoElements.toArray()[index]?.nativeElement;
     const input = event.target as HTMLInputElement;
-    
+
     if (!videoElement) return;
-    
-    videoElement.volume = parseFloat(input.value);
+
+    const volume = parseFloat(input.value);
+    videoElement.volume = volume;
+
+    const globalIndex = this.currentIndex + index;
+    const item = this.videos[globalIndex];
+    const audio = this.audioElements.get(item.id);
+    if (audio) {
+      audio.volume = volume;
+    }
   }
 
   toggleMute(index: number): void {
     const videoElement = this.videoElements.toArray()[index]?.nativeElement;
     if (!videoElement) return;
-    
-    videoElement.muted = !videoElement.muted;
+
+    const globalIndex = this.currentIndex + index;
+    const item = this.videos[globalIndex];
+    const audio = this.audioElements.get(item.id);
+
+    if (audio) {
+      audio.muted = !audio.muted;
+    } else {
+      videoElement.muted = !videoElement.muted;
+    }
   }
 
   isMuted(index: number): boolean {
     const videoElement = this.videoElements.toArray()[index]?.nativeElement;
-    return videoElement ? videoElement.muted : false;
+    if (!videoElement) return false;
+
+    const globalIndex = this.currentIndex + index;
+    const item = this.videos[globalIndex];
+    const audio = this.audioElements.get(item.id);
+
+    return audio ? audio.muted : videoElement.muted;
   }
 
   getVolume(index: number): number {
     const videoElement = this.videoElements.toArray()[index]?.nativeElement;
-    return videoElement ? videoElement.volume : 1;
+    if (!videoElement) return 1;
+
+    const globalIndex = this.currentIndex + index;
+    const item = this.videos[globalIndex];
+    const audio = this.audioElements.get(item.id);
+
+    return audio ? audio.volume : videoElement.volume;
   }
 
   // Actualizar tiempo actual
   onTimeUpdate(index: number, event: Event): void {
     const videoElement = event.target as HTMLVideoElement;
     const globalIndex = this.currentIndex + index;
-    
+
     if (globalIndex < this.videos.length) {
       this.videos[globalIndex].currentTime = videoElement.currentTime;
-      
-      // Si el video llegó al final, marcar como no reproduciendo
+
+      // Sincronizar audio con video (pequeño margen para evitar saltos constantes)
+      const item = this.videos[globalIndex];
+      const audio = this.audioElements.get(item.id);
+      if (audio && Math.abs(audio.currentTime - videoElement.currentTime) > 0.3) {
+        try {
+          audio.currentTime = videoElement.currentTime;
+        } catch {
+          /* ignore */
+        }
+      }
+
+      // Si el video llegó al final, marcar como no reproduciendo y pausar audio
       if (videoElement.currentTime >= videoElement.duration) {
         this.videos[globalIndex].isPlaying = false;
+        if (audio) audio.pause();
       }
     }
   }
@@ -578,19 +742,59 @@ export class Videos {
   onLoadedMetadata(index: number, event: Event): void {
     const videoElement = event.target as HTMLVideoElement;
     const globalIndex = this.currentIndex + index;
-    
+
     if (globalIndex < this.videos.length) {
       this.videos[globalIndex].duration = videoElement.duration;
     }
   }
 
-  // Formatear tiempo (MM:SS)
-  formatTime(seconds: number): string {
-    if (isNaN(seconds) || seconds === 0) return '00:00';
-    
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  // Cambiar pista de audio: mantener la posición y estado de reproducción
+  changeAudio(videoIndex: number, audioIndex: number): void {
+    const globalIndex = this.currentIndex + videoIndex;
+    const item = this.videos[globalIndex];
+    const videoElement = this.videoElements.toArray()[videoIndex]?.nativeElement;
+    if (!item || !videoElement) return;
+
+    const currentTime = videoElement.currentTime;
+    const wasPlaying = item.isPlaying;
+
+    // Pausar audio anterior y guardar su posición para retomarla
+    const prevAudio = this.audioElements.get(item.id);
+    let resumeTime = currentTime;
+    if (prevAudio) {
+      try {
+        resumeTime = prevAudio.currentTime || currentTime;
+      } catch {
+        resumeTime = currentTime;
+      }
+      prevAudio.pause();
+      this.audioElements.delete(item.id);
+    }
+
+    item.selectedAudio = audioIndex;
+
+    // Si la nueva pista existe, crearla y sincronizar usando resumeTime
+    if (item.audios && item.audios.length > 0 && item.selectedAudio >= 0) {
+      const audio = this.createOrGetAudio(item);
+      if (audio) {
+        try {
+          audio.currentTime = resumeTime;
+        } catch {
+          /* ignore */
+        }
+        audio.volume = videoElement.volume;
+        // si el video está reproduciéndose, reproducir el audio nuevo en la misma posición
+        if (wasPlaying) {
+          videoElement.muted = true;
+          audio.play().catch(() => {
+            /* ignore */
+          });
+        }
+      }
+    } else {
+      // no hay pista externa -> asegurar que el video no esté silenciado
+      videoElement.muted = false;
+    }
   }
 
   // MÉTODOS EXISTENTES (sin cambios)
@@ -602,15 +806,11 @@ export class Videos {
       for (let i = 0; i < videoElement.textTracks.length; i++) {
         videoElement.textTracks[i].mode = 'disabled';
       }
-      
+
       if (subtitleIndex >= 0 && videoElement.textTracks[subtitleIndex]) {
         videoElement.textTracks[subtitleIndex].mode = 'showing';
       }
     }
-  }
-
-  changeAudio(videoIndex: number, audioIndex: number): void {
-    console.log(`Cambiar audio del video ${videoIndex} a track ${audioIndex}`);
   }
 
   openModal(): void {
@@ -651,9 +851,11 @@ export class Videos {
       return;
     }
 
-    if (!this.newVideo.audios[index]) {
-      this.newVideo.audios[index] = file;
-    }
+    // Asegurar índice válido y máximo 2 pistas
+    if (index < 0 || index > 1) return;
+
+    // Siempre asignar/actualizar la pista en la posición indicada
+    this.newVideo.audios[index] = file;
   }
 
   onSubtitleChange(event: any, index: number): void {
@@ -694,10 +896,10 @@ export class Videos {
 
     setTimeout(() => {
       const videoURL = URL.createObjectURL(this.newVideo.video);
-      
-      const validAudios = this.newVideo.audios.filter((a: File | null) => a);
-      const validSubtitles = this.newVideo.subtitles.filter((s: File | null) => s);
-      
+
+      const validAudios = (this.newVideo.audios || []).filter((a: File | null) => a);
+      const validSubtitles = (this.newVideo.subtitles || []).filter((s: File | null) => s);
+
       const audioURLs = validAudios.map((audio: File) => URL.createObjectURL(audio));
       const subtitleURLs = validSubtitles.map((subtitle: File) => URL.createObjectURL(subtitle));
 
@@ -707,19 +909,19 @@ export class Videos {
         title: this.newVideo.title || `Video ${this.videoCounter - 1}`,
         audios: audioURLs,
         subtitles: subtitleURLs,
-        selectedAudio: 0,
+        selectedAudio: audioURLs.length > 0 ? 0 : -1,
         selectedSubtitle: subtitleURLs.length > 0 ? 0 : -1,
         isPlaying: false,
         audioNames: validAudios.map((a: File) => a.name),
         subtitleNames: validSubtitles.map((s: File) => s.name.replace('.vtt', '')),
         duration: 0,
-        currentTime: 0
+        currentTime: 0,
       });
 
       this.resetNewVideo();
       this.isAdding = false;
       this.closeModal();
-      
+
       alert('✅ Video agregado exitosamente!');
     }, 1000);
   }
@@ -729,7 +931,7 @@ export class Videos {
       video: null,
       title: '',
       audios: [null, null],
-      subtitles: [null, null]
+      subtitles: [null, null],
     };
   }
 
@@ -737,7 +939,7 @@ export class Videos {
     this.errors = {
       video: '',
       audio: '',
-      subtitle: ''
+      subtitle: '',
     };
   }
 
@@ -749,21 +951,43 @@ export class Videos {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   }
 
+  // Agregado: formatea segundos a "MM:SS" o "H:MM:SS"
+  formatTime(seconds: number | null | undefined): string {
+    if (seconds == null || !isFinite(seconds) || seconds <= 0) {
+      return '00:00';
+    }
+    const total = Math.floor(seconds);
+    const h = Math.floor(total / 3600);
+    const m = Math.floor((total % 3600) / 60);
+    const s = total % 60;
+    const mm = m.toString().padStart(2, '0');
+    const ss = s.toString().padStart(2, '0');
+    return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
+  }
+
   get audioCount(): number {
-    const audios = (this.newVideo && this.newVideo.audios) ? this.newVideo.audios : [];
+    const audios = this.newVideo && this.newVideo.audios ? this.newVideo.audios : [];
     return audios.filter((a: any) => !!a).length;
   }
 
   get subtitleCount(): number {
-    const subtitles = (this.newVideo && this.newVideo.subtitles) ? this.newVideo.subtitles : [];
+    const subtitles = this.newVideo && this.newVideo.subtitles ? this.newVideo.subtitles : [];
     return subtitles.filter((s: any) => !!s).length;
   }
 
   ngOnDestroy() {
-    this.videos.forEach(video => {
+    // detener y limpiar audios creados
+    this.audioElements.forEach((audio) => {
+      try {
+        audio.pause();
+      } catch {}
+    });
+    this.audioElements.clear();
+
+    this.videos.forEach((video) => {
       URL.revokeObjectURL(video.src);
-      video.audios.forEach(url => URL.revokeObjectURL(url));
-      video.subtitles.forEach(url => URL.revokeObjectURL(url));
+      video.audios.forEach((url) => URL.revokeObjectURL(url));
+      video.subtitles.forEach((url) => URL.revokeObjectURL(url));
     });
   }
 }
