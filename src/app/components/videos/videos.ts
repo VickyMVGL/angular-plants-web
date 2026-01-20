@@ -324,9 +324,7 @@ interface VideoItem {
                   <i class="upload-icon">🔊</i>
                   <p>Audio opcional 2</p>
                   <p class="file-types">MP3, WAV, OGG</p>
-                  <small *ngIf="newVideo.audios.length >= 2 && !newVideo.audios[1]">
-                    (Límite alcanzado)
-                  </small>
+                  <small *ngIf="audioCount >= 2 && !newVideo.audios[1]"> (Límite alcanzado) </small>
                 </div>
                 <div class="file-preview" *ngIf="newVideo.audios[1]">
                   <div class="file-details">
@@ -391,13 +389,13 @@ interface VideoItem {
                   accept=".vtt,text/vtt"
                   (change)="onSubtitleChange($event, 1)"
                   #subtitleInput2
-                  [disabled]="newVideo.subtitles.length >= 2 && !newVideo.subtitles[1]"
+                  [disabled]="subtitleCount >= 2 && !newVideo.subtitles[1]"
                 />
                 <div class="upload-placeholder" *ngIf="!newVideo.subtitles[1]">
                   <i class="upload-icon">📝</i>
                   <p>Subtítulos opcional 2</p>
                   <p class="file-types">VTT</p>
-                  <small *ngIf="newVideo.subtitles.length >= 2 && !newVideo.subtitles[1]">
+                  <small *ngIf="subtitleCount >= 2 && !newVideo.subtitles[1]">
                     (Límite alcanzado)
                   </small>
                 </div>
@@ -832,11 +830,19 @@ export class Videos {
     const videoElement = this.videoElements.toArray()[videoIndex]?.nativeElement;
     if (!videoElement) return;
 
+    const globalIndex = this.currentIndex + videoIndex;
+    // guardar selección en el modelo
+    if (globalIndex < this.videos.length) {
+      this.videos[globalIndex].selectedSubtitle = subtitleIndex;
+    }
+
     if (videoElement.textTracks) {
+      // Desactivar todos primero
       for (let i = 0; i < videoElement.textTracks.length; i++) {
         videoElement.textTracks[i].mode = 'disabled';
       }
 
+      // Si se seleccionó una pista válida, activarla
       if (subtitleIndex >= 0 && videoElement.textTracks[subtitleIndex]) {
         videoElement.textTracks[subtitleIndex].mode = 'showing';
       }
