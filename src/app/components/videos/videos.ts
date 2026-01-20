@@ -47,7 +47,11 @@ interface VideoItem {
 
       <!-- Carousel de videos -->
       <div class="carousel">
-        <div class="video-card" *ngFor="let v of visibleVideos; let i = index">
+        <div
+          class="video-card"
+          *ngFor="let v of visibleVideos; let i = index"
+          (contextmenu)="openContextMenu($event, v, i)"
+        >
           <div class="video-header">
             <h3>{{ v.title || 'Video ' + v.id }}</h3>
           </div>
@@ -442,6 +446,18 @@ interface VideoItem {
             </button>
           </div>
         </div>
+      </div>
+
+      <!-- Menú contextual personalizado -->
+      <div
+        class="context-menu"
+        *ngIf="contextMenuVisible"
+        [style.left.px]="contextMenuX"
+        [style.top.px]="contextMenuY"
+        (contextmenu)="$event.preventDefault()"
+      >
+        <button class="context-item" (click)="editVideoFromContext()">✏️ Editar</button>
+        <button class="context-item danger" (click)="deleteVideoFromContext()">🗑️ Borrar</button>
       </div>
     </div>
   `,
@@ -1030,5 +1046,92 @@ export class Videos {
       else if (el.mozRequestFullScreen) el.mozRequestFullScreen();
       else if (el.msRequestFullscreen) el.msRequestFullscreen();
     }
+  }
+
+  // CONTEXT MENU STATE
+  contextMenuVisible = false;
+  contextMenuX = 0;
+  contextMenuY = 0;
+  contextMenuVideoId: number | null = null;
+  contextMenuIndex: number | null = null;
+
+  // handler reference para remover listener global
+  private windowClickHandler = (e: Event) => this.closeContextMenu();
+
+  // Abrir menú contextual al hacer click derecho sobre una tarjeta de video
+  openContextMenu(event: MouseEvent, video: VideoItem, index: number): void {
+    event.preventDefault();
+    this.contextMenuVisible = true;
+    this.contextMenuX = event.clientX;
+    this.contextMenuY = event.clientY;
+    this.contextMenuVideoId = video.id;
+    this.contextMenuIndex = this.currentIndex + index;
+
+    // cerrar cuando se haga click en cualquier parte
+    window.addEventListener('click', this.windowClickHandler);
+  }
+
+  closeContextMenu(): void {
+    this.contextMenuVisible = false;
+    this.contextMenuVideoId = null;
+    this.contextMenuIndex = null;
+    window.removeEventListener('click', this.windowClickHandler);
+  }
+
+  // Editar: por ahora sólo editar el título (puedes reemplazar por un modal)
+  editVideoFromContext(): void {
+    if (this.contextMenuIndex == null) {
+      this.closeContextMenu();
+      return;
+    }
+    const idx = this.contextMenuIndex;
+    const video = this.videos[idx];
+    if (!video) {
+      this.closeContextMenu();
+      return;
+    }
+
+    const newTitle = prompt('Editar título del video:', video.title || '');
+    if (newTitle !== null) {
+      video.title = newTitle.trim();
+    }
+    this.closeContextMenu();
+  }
+
+  // Borrar video (libera objectURLs y remueve del arreglo)
+  deleteVideoFromContext(): void {
+    if (this.contextMenuIndex == null) {
+      this.closeContextMenu();
+      return;
+    }
+    const idx = this.contextMenuIndex;
+    const video = this.videos[idx];
+    if (!video) {
+      this.closeContextMenu();
+      return;
+    }
+
+    const confirmDel = confirm(`¿Eliminar "${video.title || 'Video ' + video.id}"?`);
+    if (!confirmDel) {
+      this.closeContextMenu();
+      return;
+    }
+
+    // pausar audio si estaba en reproducción
+    const audio = this.audioElements.get(video.id);
+    if (audio) {
+      audio.pause();
+      audio.currentTime = 0;
+    }
+
+    // liberar object URLs
+    URL.revokeObjectURL(video.src);
+    video.audios.forEach((url) => URL.revokeObjectURL(url));
+    video.subtitles.forEach((url) => URL.revokeObjectURL(url));
+
+    // eliminar del arreglo
+    this.videos.splice(idx, 1);
+
+    this.closeContextMenu();
   }
 }
