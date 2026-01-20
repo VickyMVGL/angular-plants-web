@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChildren, QueryList } from '@angular/core';
+import { Component, ElementRef, ViewChildren, QueryList, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -461,7 +461,7 @@ interface VideoItem {
   `,
   styleUrls: ['./videos.css'],
 })
-export class Videos {
+export class Videos implements OnInit {
   @ViewChildren('videoEl') videoElements!: QueryList<ElementRef<HTMLVideoElement>>;
 
   videos: VideoItem[] = [];
@@ -489,6 +489,10 @@ export class Videos {
   // Propiedad Math para usar en template
   Math = Math;
 
+  // IndexedDB constants
+  private readonly IDB_NAME = 'AngularPlants_VideosDB';
+  private readonly IDB_STORE = 'videos';
+
   get visibleVideos(): VideoItem[] {
     const start = this.currentIndex;
     const end = start + 3;
@@ -505,6 +509,13 @@ export class Videos {
     if (this.currentIndex - 3 >= 0) {
       this.currentIndex -= 3;
     }
+  }
+
+  // lifecycle: cargar persistencia
+  ngOnInit(): void {
+    this.loadVideosFromDB().catch((err) => {
+      console.warn('No se pudieron cargar videos desde IndexedDB', err);
+    });
   }
 
   // NUEVOS MÉTODOS PARA CONTROLES DE REPRODUCCIÓN
@@ -930,19 +941,23 @@ export class Videos {
 
     this.isAdding = true;
 
-    setTimeout(() => {
-      const videoURL = URL.createObjectURL(this.newVideo.video);
+    setTimeout(async () => {
+      const videoFile = this.newVideo.video as File;
+      const validAudios = (this.newVideo.audios || []).filter((a: File | null) => a) as File[];
+      const validSubtitles = (this.newVideo.subtitles || []).filter(
+        (s: File | null) => s,
+      ) as File[];
 
-      const validAudios = (this.newVideo.audios || []).filter((a: File | null) => a);
-      const validSubtitles = (this.newVideo.subtitles || []).filter((s: File | null) => s);
-
+      const videoURL = URL.createObjectURL(videoFile);
       const audioURLs = validAudios.map((audio: File) => URL.createObjectURL(audio));
       const subtitleURLs = validSubtitles.map((subtitle: File) => URL.createObjectURL(subtitle));
 
+      const id = this.videoCounter++;
+
       this.videos.push({
-        id: this.videoCounter++,
+        id,
         src: videoURL,
-        title: this.newVideo.title || `Video ${this.videoCounter - 1}`,
+        title: this.newVideo.title || `Video ${id}`,
         audios: audioURLs,
         subtitles: subtitleURLs,
         selectedAudio: audioURLs.length > 0 ? 0 : -1,
@@ -953,6 +968,25 @@ export class Videos {
         duration: 0,
         currentTime: 0,
       });
+
+      // Persistir en IndexedDB (Files/Blobs se pueden clonar en IDB)
+      try {
+        await this.saveVideoToDB({
+          id,
+          title: this.newVideo.title || `Video ${id}`,
+          video: videoFile,
+          audios: validAudios,
+          subtitles: validSubtitles,
+          audioNames: validAudios.map((a: File) => a.name),
+          subtitleNames: validSubtitles.map((s: File) => s.name),
+          selectedAudio: audioURLs.length > 0 ? 0 : -1,
+          selectedSubtitle: subtitleURLs.length > 0 ? 0 : -1,
+          duration: 0,
+          currentTime: 0,
+        });
+      } catch (e) {
+        console.warn('No se pudo guardar video en IndexedDB', e);
+      }
 
       this.resetNewVideo();
       this.isAdding = false;
@@ -1021,9 +1055,19 @@ export class Videos {
     this.audioElements.clear();
 
     this.videos.forEach((video) => {
-      URL.revokeObjectURL(video.src);
-      video.audios.forEach((url) => URL.revokeObjectURL(url));
-      video.subtitles.forEach((url) => URL.revokeObjectURL(url));
+      try {
+        URL.revokeObjectURL(video.src);
+      } catch {}
+      video.audios.forEach((url) => {
+        try {
+          URL.revokeObjectURL(url);
+        } catch {}
+      });
+      video.subtitles.forEach((url) => {
+        try {
+          URL.revokeObjectURL(url);
+        } catch {}
+      });
     });
   }
 
@@ -1100,6 +1144,8 @@ export class Videos {
     const newTitle = prompt('Editar título del video:', video.title || '');
     if (newTitle !== null) {
       video.title = newTitle.trim();
+      // actualizar título en IndexedDB si existe
+      this.saveVideoMetadataToDB(video.id, { title: video.title }).catch(() => {});
     }
     this.closeContextMenu();
   }
@@ -1131,13 +1177,156 @@ export class Videos {
     }
 
     // liberar object URLs
-    URL.revokeObjectURL(video.src);
-    video.audios.forEach((url) => URL.revokeObjectURL(url));
-    video.subtitles.forEach((url) => URL.revokeObjectURL(url));
+    try {
+      URL.revokeObjectURL(video.src);
+    } catch {}
+    video.audios.forEach((url) => {
+      try {
+        URL.revokeObjectURL(url);
+      } catch {}
+    });
+    video.subtitles.forEach((url) => {
+      try {
+        URL.revokeObjectURL(url);
+      } catch {}
+    });
 
     // eliminar del arreglo
     this.videos.splice(idx, 1);
 
+    // eliminar de IndexedDB (si existe)
+    this.deleteVideoFromDB(video.id).catch(() => {
+      /* ignore */
+    });
+
     this.closeContextMenu();
+  }
+
+  // ---------- IndexedDB helpers ----------
+  private openIdb(): Promise<IDBDatabase> {
+    return new Promise((resolve, reject) => {
+      if (!('indexedDB' in window)) {
+        reject(new Error('IndexedDB no disponible'));
+        return;
+      }
+      const req = indexedDB.open(this.IDB_NAME, 1);
+      req.onupgradeneeded = () => {
+        const db = req.result;
+        if (!db.objectStoreNames.contains(this.IDB_STORE)) {
+          db.createObjectStore(this.IDB_STORE, { keyPath: 'id' });
+        }
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  private saveVideoToDB(record: any): Promise<void> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const db = await this.openIdb();
+        const tx = db.transaction(this.IDB_STORE, 'readwrite');
+        const store = tx.objectStore(this.IDB_STORE);
+        store.put(record);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      } catch (e) {
+        reject(e);
+      }
+    });
+  }
+
+  private saveVideoMetadataToDB(id: number, metadata: Partial<any>): Promise<void> {
+    return new Promise(async (resolve) => {
+      try {
+        const db = await this.openIdb();
+        const tx = db.transaction(this.IDB_STORE, 'readwrite');
+        const store = tx.objectStore(this.IDB_STORE);
+        const getReq = store.get(id);
+        getReq.onsuccess = () => {
+          const rec = getReq.result;
+          if (rec) {
+            const updated = { ...rec, ...metadata };
+            store.put(updated);
+          }
+        };
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => resolve();
+      } catch {
+        resolve();
+      }
+    });
+  }
+
+  private deleteVideoFromDB(id: number): Promise<void> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const db = await this.openIdb();
+        const tx = db.transaction(this.IDB_STORE, 'readwrite');
+        const store = tx.objectStore(this.IDB_STORE);
+        store.delete(id);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      } catch (e) {
+        reject(e);
+      }
+    });
+  }
+
+  private loadVideosFromDB(): Promise<void> {
+    return new Promise(async (resolve) => {
+      try {
+        const db = await this.openIdb();
+        const tx = db.transaction(this.IDB_STORE, 'readonly');
+        const store = tx.objectStore(this.IDB_STORE);
+        const req = store.getAll();
+        req.onsuccess = () => {
+          const items = req.result || [];
+          let maxId = this.videoCounter;
+          items.forEach((it: any) => {
+            const videoBlob: Blob | undefined = it.video;
+            const audioBlobs: Blob[] = it.audios || [];
+            const subtitleBlobs: Blob[] = it.subtitles || [];
+
+            const videoURL = videoBlob ? URL.createObjectURL(videoBlob) : '';
+            const audioURLs = (audioBlobs || []).map((b: Blob) => URL.createObjectURL(b));
+            const subtitleURLs = (subtitleBlobs || []).map((b: Blob) => URL.createObjectURL(b));
+
+            const id = it.id;
+            this.videos.push({
+              id,
+              src: videoURL,
+              title: it.title || `Video ${id}`,
+              audios: audioURLs,
+              subtitles: subtitleURLs,
+              selectedAudio:
+                typeof it.selectedAudio === 'number'
+                  ? it.selectedAudio
+                  : audioURLs.length > 0
+                    ? 0
+                    : -1,
+              selectedSubtitle:
+                typeof it.selectedSubtitle === 'number'
+                  ? it.selectedSubtitle
+                  : subtitleURLs.length > 0
+                    ? 0
+                    : -1,
+              isPlaying: false,
+              audioNames: it.audioNames || [],
+              subtitleNames: it.subtitleNames || [],
+              duration: it.duration || 0,
+              currentTime: it.currentTime || 0,
+            });
+
+            if (id >= maxId) maxId = id + 1;
+          });
+          this.videoCounter = maxId;
+          resolve();
+        };
+        req.onerror = () => resolve();
+      } catch {
+        resolve();
+      }
+    });
   }
 }
