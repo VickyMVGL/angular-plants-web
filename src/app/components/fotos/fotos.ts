@@ -97,7 +97,7 @@ interface Foto {
           <button
             class="btn btn-primary"
             (click)="savePhoto()"
-            [disabled]="!tituloFoto || !croppedImage"
+            [disabled]="!tituloFoto || !(croppedImage || imageChangedEvent)"
           >
             Guardar
           </button>
@@ -160,15 +160,37 @@ export class Fotos {
   }
 
   savePhoto(): void {
-    if (!this.croppedImage) return;
+    if (!this.tituloFoto) return;
 
-    this.fotos.push({
-      id: this.idCounter++,
-      titulo: this.tituloFoto,
-      src: this.croppedImage,
-    });
+    // Si ya tenemos la imagen recortada, la usamos directamente
+    if (this.croppedImage) {
+      this.fotos.push({
+        id: this.idCounter++,
+        titulo: this.tituloFoto,
+        src: this.croppedImage,
+      });
+      this.closeModal();
+      return;
+    }
 
-    this.closeModal();
+    // Fallback: si no hay imagen recortada, convertir el archivo seleccionado a base64
+    if (this.imageChangedEvent) {
+      const input = this.imageChangedEvent.target as HTMLInputElement;
+      const file = input?.files?.[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        const base64 = reader.result as string;
+        this.fotos.push({
+          id: this.idCounter++,
+          titulo: this.tituloFoto,
+          src: base64,
+        });
+        this.closeModal();
+      };
+      reader.readAsDataURL(file);
+    }
   }
 
   private resetForm(): void {
