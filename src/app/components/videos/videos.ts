@@ -462,8 +462,8 @@ interface VideoItem {
         [style.top.px]="contextMenuY"
         (contextmenu)="$event.preventDefault()"
       >
-        <button class="context-item" (click)="editVideoFromContext()">✏️ Editar</button>
-        <button class="context-item danger" (click)="deleteVideoFromContext()">🗑️ Borrar</button>
+        <button class="context-item" (click)="editVideoFromContext()">Editar</button>
+        <button class="context-item danger" (click)="deleteVideoFromContext()">Eliminar</button>
       </div>
     </div>
   `,
