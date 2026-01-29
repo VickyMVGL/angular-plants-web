@@ -214,9 +214,12 @@ interface VideoItem {
       <div class="modal" [class.show]="showModal">
         <div class="modal-content" (click)="$event.stopPropagation()">
           <div class="modal-header">
-            <h3>Agregar Nuevo Video</h3>
-            <p class="modal-subtitle">
+            <h3>{{ editMode ? 'Editar Video' : 'Agregar Nuevo Video' }}</h3>
+            <p class="modal-subtitle" *ngIf="!editMode">
               Selecciona 1 video, hasta 2 pistas de audio y 2 archivos de subtítulos
+            </p>
+            <p class="modal-subtitle" *ngIf="editMode">
+              Edita título, selecciona pista de audio/subtítulos, o reemplaza archivos
             </p>
             <button class="close-btn" (click)="closeModal()">&times;</button>
           </div>
@@ -300,10 +303,11 @@ interface VideoItem {
                       <span>{{ formatFileSize(newVideo.audios[0].size) }}</span>
                     </div>
                   </div>
-                  <button type="button" class="remove-btn" (click)="removeAudio(0)">
-                    Eliminar
-                  </button>
                 </div>
+              </div>
+              <!-- BOTÓN ELIMINAR FUERA DEL AREA DE UPLOAD (si hay archivo para mostrar) -->
+              <div class="remove-action" *ngIf="newVideo.audios[0] || audioExistsInEdited(0)">
+                <button type="button" class="remove-btn" (click)="removeAudio(0)">Eliminar</button>
               </div>
             </div>
 
@@ -334,10 +338,10 @@ interface VideoItem {
                       <span>{{ formatFileSize(newVideo.audios[1].size) }}</span>
                     </div>
                   </div>
-                  <button type="button" class="remove-btn" (click)="removeAudio(1)">
-                    Eliminar
-                  </button>
                 </div>
+              </div>
+              <div class="remove-action" *ngIf="newVideo.audios[1] || audioExistsInEdited(1)">
+                <button type="button" class="remove-btn" (click)="removeAudio(1)">Eliminar</button>
               </div>
             </div>
 
@@ -371,10 +375,12 @@ interface VideoItem {
                       <span>{{ formatFileSize(newVideo.subtitles[0].size) }}</span>
                     </div>
                   </div>
-                  <button type="button" class="remove-btn" (click)="removeSubtitle(0)">
-                    Eliminar
-                  </button>
                 </div>
+              </div>
+              <div class="remove-action" *ngIf="newVideo.subtitles[0] || subtitleExistsInEdited(0)">
+                <button type="button" class="remove-btn" (click)="removeSubtitle(0)">
+                  Eliminar
+                </button>
               </div>
             </div>
 
@@ -407,10 +413,12 @@ interface VideoItem {
                       <span>{{ formatFileSize(newVideo.subtitles[1].size) }}</span>
                     </div>
                   </div>
-                  <button type="button" class="remove-btn" (click)="removeSubtitle(1)">
-                    Eliminar
-                  </button>
                 </div>
+              </div>
+              <div class="remove-action" *ngIf="newVideo.subtitles[1] || subtitleExistsInEdited(1)">
+                <button type="button" class="remove-btn" (click)="removeSubtitle(1)">
+                  Eliminar
+                </button>
               </div>
             </div>
 
@@ -436,10 +444,10 @@ interface VideoItem {
             <button class="btn btn-secondary" (click)="closeModal()">Cancelar</button>
             <button
               class="btn btn-primary"
-              (click)="addVideo()"
-              [disabled]="!newVideo.video || isAdding"
+              (click)="editMode ? saveEditedVideo() : addVideo()"
+              [disabled]="(!editMode && !newVideo.video) || isAdding"
             >
-              <span *ngIf="!isAdding">Agregar Video</span>
+              <span *ngIf="!isAdding">{{ editMode ? 'Guardar Cambios' : 'Agregar Video' }}</span>
               <span *ngIf="isAdding">Procesando...</span>
             </button>
           </div>
@@ -463,6 +471,9 @@ interface VideoItem {
 })
 export class Videos implements OnInit {
   @ViewChildren('videoEl') videoElements!: QueryList<ElementRef<HTMLVideoElement>>;
+  // Edit mode state
+  editMode = false;
+  editVideoIndex: number | null = null;
 
   videos: VideoItem[] = [];
   currentIndex = 0;
@@ -492,6 +503,10 @@ export class Videos implements OnInit {
   // IndexedDB constants
   private readonly IDB_NAME = 'AngularPlants_VideosDB';
   private readonly IDB_STORE = 'videos';
+
+  // flags para indicar ranuras eliminadas en el modal (no tocar videos hasta guardar)
+  deletedAudioSlots: boolean[] = [false, false];
+  deletedSubtitleSlots: boolean[] = [false, false];
 
   get visibleVideos(): VideoItem[] {
     const start = this.currentIndex;
@@ -926,11 +941,31 @@ export class Videos implements OnInit {
   }
 
   removeAudio(index: number): void {
+    // Marcar ranura como eliminada y borrar el valor en el formulario.
+    // No tocar this.videos aquí: el cambio se aplicará al guardar.
+    const entry = this.newVideo.audios && this.newVideo.audios[index];
+    if (entry && (entry.url || entry instanceof File)) {
+      try {
+        // si era objectURL creado en el formulario, revocar
+        if ((entry as any).url) URL.revokeObjectURL((entry as any).url);
+        // si era File no hay objectURL asociado aquí
+      } catch {}
+    }
+
     this.newVideo.audios[index] = null;
+    this.deletedAudioSlots[index] = true;
   }
 
   removeSubtitle(index: number): void {
+    const entry = this.newVideo.subtitles && this.newVideo.subtitles[index];
+    if (entry && (entry.url || entry instanceof File)) {
+      try {
+        if ((entry as any).url) URL.revokeObjectURL((entry as any).url);
+      } catch {}
+    }
+
     this.newVideo.subtitles[index] = null;
+    this.deletedSubtitleSlots[index] = true;
   }
 
   addVideo(): void {
@@ -996,6 +1031,244 @@ export class Videos implements OnInit {
     }, 1000);
   }
 
+  // Editar: abrir modal en modo edición con los datos actuales
+  editVideoFromContext(): void {
+    if (this.contextMenuIndex == null) {
+      this.closeContextMenu();
+      return;
+    }
+    const idx = this.contextMenuIndex;
+    this.openEditModal(idx);
+    this.closeContextMenu();
+  }
+
+  // Abre modal en modo edición y prellena newVideo con metadatos existentes
+  openEditModal(globalIndex: number): void {
+    const item = this.videos[globalIndex];
+    if (!item) return;
+
+    this.editMode = true;
+    this.editVideoIndex = globalIndex;
+    // Prellenar campos de newVideo para permitir reemplazos o dejar como están
+    this.newVideo = {
+      video: null, // permitir reemplazar video si se desea
+      title: item.title || '',
+      // Para audios/subtitles guardamos objetos con url/name si no se reemplazan
+      audios: (item.audios || []).map((url, i) => ({
+        url,
+        name: item.audioNames && item.audioNames[i] ? item.audioNames[i] : `Audio ${i + 1}`,
+      })),
+      subtitles: (item.subtitles || []).map((url, i) => ({
+        url,
+        name:
+          item.subtitleNames && item.subtitleNames[i]
+            ? item.subtitleNames[i]
+            : `Subtítulo ${i + 1}`,
+      })),
+      selectedAudio: item.selectedAudio,
+      selectedSubtitle: item.selectedSubtitle,
+    };
+
+    this.resetErrors();
+    this.showModal = true;
+  }
+
+  // Recupera registro desde IndexedDB (si existe) para mantener blobs cuando no se reemplazan
+  private getVideoRecordFromDB(id: number): Promise<any | null> {
+    return new Promise(async (resolve) => {
+      try {
+        const db = await this.openIdb();
+        const tx = db.transaction(this.IDB_STORE, 'readonly');
+        const store = tx.objectStore(this.IDB_STORE);
+        const req = store.get(id);
+        req.onsuccess = () => resolve(req.result || null);
+        req.onerror = () => resolve(null);
+      } catch {
+        resolve(null);
+      }
+    });
+  }
+
+  // Guardar cambios del modo edición: actualiza UI e IndexedDB (si existe)
+  async saveEditedVideo(): Promise<void> {
+    if (this.editVideoIndex == null) return;
+    this.isAdding = true;
+    const idx = this.editVideoIndex;
+    const item = this.videos[idx];
+    if (!item) {
+      this.isAdding = false;
+      return;
+    }
+
+    try {
+      const originalRec = await this.getVideoRecordFromDB(item.id);
+
+      // Preparar audios/subtitles: pueden ser File (reemplazo), objeto {url,name} (mantener) o null (eliminar)
+      const updatedAudioURLs: (string | undefined)[] = [];
+      const updatedAudioNames: (string | undefined)[] = [];
+      const updatedAudioBlobs: (Blob | undefined)[] =
+        originalRec && originalRec.audios ? [...originalRec.audios] : [];
+
+      const auds = this.newVideo.audios || [];
+      let audioChanged = false;
+      for (let i = 0; i < Math.max(auds.length, item.audios.length || 0); i++) {
+        const a = auds[i];
+        // si el usuario marcó la ranura como eliminada en el modal -> forzar eliminación
+        if (this.deletedAudioSlots[i]) {
+          audioChanged = true;
+          updatedAudioURLs[i] = undefined;
+          updatedAudioNames[i] = undefined;
+          updatedAudioBlobs[i] = undefined;
+          continue;
+        }
+        if (a instanceof File) {
+          audioChanged = true;
+          // reemplazar: revocar URL antigua y crear nueva
+          if (item.audios && item.audios[i]) {
+            try {
+              URL.revokeObjectURL(item.audios[i]);
+            } catch {}
+          }
+          const url = URL.createObjectURL(a);
+          updatedAudioURLs[i] = url;
+          updatedAudioNames[i] = a.name;
+          updatedAudioBlobs[i] = a;
+        } else if (a && a.url) {
+          // mantener la existencia (no es un File nuevo)
+          updatedAudioURLs[i] = a.url;
+          updatedAudioNames[i] = a.name;
+          // mantener blob existente (updatedAudioBlobs[i] ya contiene el blob desde originalRec si existe)
+        } else if (a === null) {
+          // eliminación explícita
+          audioChanged = true;
+          if (item.audios && item.audios[i]) {
+            try {
+              URL.revokeObjectURL(item.audios[i]);
+            } catch {}
+          }
+          updatedAudioURLs[i] = undefined;
+          updatedAudioNames[i] = undefined;
+          updatedAudioBlobs[i] = undefined; // marcar para eliminar en DB
+        } else {
+          // si no hay nada nuevo y no existía antes, queda undefined
+          updatedAudioURLs[i] = updatedAudioURLs[i];
+        }
+      }
+
+      const updatedSubtitleURLs: (string | undefined)[] = [];
+      const updatedSubtitleNames: (string | undefined)[] = [];
+      const updatedSubtitleBlobs: (Blob | undefined)[] =
+        originalRec && originalRec.subtitles ? [...originalRec.subtitles] : [];
+
+      const subs = this.newVideo.subtitles || [];
+      let subtitleChanged = false;
+      for (let i = 0; i < Math.max(subs.length, item.subtitles.length || 0); i++) {
+        const s = subs[i];
+        // si el usuario marcó la ranura como eliminada en el modal -> forzar eliminación
+        if (this.deletedSubtitleSlots[i]) {
+          subtitleChanged = true;
+          updatedSubtitleURLs[i] = undefined;
+          updatedSubtitleNames[i] = undefined;
+          updatedSubtitleBlobs[i] = undefined;
+          continue;
+        }
+        if (s instanceof File) {
+          subtitleChanged = true;
+          if (item.subtitles && item.subtitles[i]) {
+            try {
+              URL.revokeObjectURL(item.subtitles[i]);
+            } catch {}
+          }
+          const url = URL.createObjectURL(s);
+          updatedSubtitleURLs[i] = url;
+          updatedSubtitleNames[i] = s.name.replace('.vtt', '');
+          updatedSubtitleBlobs[i] = s;
+        } else if (s && s.url) {
+          updatedSubtitleURLs[i] = s.url;
+          updatedSubtitleNames[i] = s.name;
+        } else if (s === null) {
+          subtitleChanged = true;
+          if (item.subtitles && item.subtitles[i]) {
+            try {
+              URL.revokeObjectURL(item.subtitles[i]);
+            } catch {}
+          }
+          updatedSubtitleURLs[i] = undefined;
+          updatedSubtitleNames[i] = undefined;
+          updatedSubtitleBlobs[i] = undefined;
+        } else {
+          updatedSubtitleURLs[i] = updatedSubtitleURLs[i];
+        }
+      }
+
+      // Construir arrays finales filtrando entradas eliminadas (undefined)
+      const finalAudioURLs = updatedAudioURLs.filter((u): u is string => !!u);
+      const finalAudioNames = updatedAudioNames.filter((n): n is string => !!n);
+      const finalAudioBlobs = updatedAudioBlobs.filter((b) => b !== undefined) as Blob[];
+
+      const finalSubtitleURLs = updatedSubtitleURLs.filter((u): u is string => !!u);
+      const finalSubtitleNames = updatedSubtitleNames.filter((n): n is string => !!n);
+      const finalSubtitleBlobs = updatedSubtitleBlobs.filter((b) => b !== undefined) as Blob[];
+
+      // Actualizar el objeto en memoria solo si hubo cambios; si no, conservar los valores actuales
+      if (audioChanged) {
+        item.audios = finalAudioURLs;
+        item.audioNames = finalAudioNames;
+        // asegurar selección válida
+        if (!item.audios || item.audios.length === 0) item.selectedAudio = -1;
+        else if (item.selectedAudio >= item.audios.length) item.selectedAudio = 0;
+      } else {
+        // si no hubo cambios, mantener item.audios / audioNames tal cual
+      }
+
+      if (subtitleChanged) {
+        item.subtitles = finalSubtitleURLs;
+        item.subtitleNames = finalSubtitleNames;
+        if (!item.subtitles || item.subtitles.length === 0) item.selectedSubtitle = -1;
+        else if (item.selectedSubtitle >= item.subtitles.length) item.selectedSubtitle = 0;
+      }
+
+      item.title = this.newVideo.title || item.title;
+      item.selectedAudio =
+        typeof this.newVideo.selectedAudio === 'number'
+          ? this.newVideo.selectedAudio
+          : item.selectedAudio;
+      item.selectedSubtitle =
+        typeof this.newVideo.selectedSubtitle === 'number'
+          ? this.newVideo.selectedSubtitle
+          : item.selectedSubtitle;
+
+      // Actualizar IndexedDB: combinar blobs del original con reemplazos / eliminaciones
+      const recordToSave: any = originalRec || { id: item.id };
+      recordToSave.title = item.title;
+      recordToSave.selectedAudio = item.selectedAudio;
+      recordToSave.selectedSubtitle = item.selectedSubtitle;
+      recordToSave.audioNames = item.audioNames || [];
+      recordToSave.subtitleNames = item.subtitleNames || [];
+
+      // Si hubo cambios, reemplazar arrays de blobs en el registro; si no, mantener original
+      if (audioChanged) {
+        recordToSave.audios = finalAudioBlobs;
+      }
+      if (subtitleChanged) {
+        recordToSave.subtitles = finalSubtitleBlobs;
+      }
+
+      try {
+        await this.saveVideoToDB(recordToSave);
+      } catch {
+        /* ignore db save errors */
+      }
+    } finally {
+      this.isAdding = false;
+      this.editMode = false;
+      this.editVideoIndex = null;
+      this.resetNewVideo();
+      this.closeModal();
+      alert('✅ Cambios guardados correctamente');
+    }
+  }
+
   private resetNewVideo(): void {
     this.newVideo = {
       video: null,
@@ -1003,6 +1276,9 @@ export class Videos implements OnInit {
       audios: [null, null],
       subtitles: [null, null],
     };
+    // resetear flags de eliminación
+    this.deletedAudioSlots = [false, false];
+    this.deletedSubtitleSlots = [false, false];
   }
 
   private resetErrors(): void {
@@ -1043,6 +1319,29 @@ export class Videos implements OnInit {
   get subtitleCount(): number {
     const subtitles = this.newVideo && this.newVideo.subtitles ? this.newVideo.subtitles : [];
     return subtitles.filter((s: any) => !!s).length;
+  }
+
+  // Helpers para evitar accesos directos potencialmente undefined en el template
+  audioExistsInEdited(index: number): boolean {
+    return (
+      this.editMode &&
+      typeof this.editVideoIndex === 'number' &&
+      !!this.videos &&
+      !!this.videos[this.editVideoIndex] &&
+      Array.isArray(this.videos[this.editVideoIndex].audios) &&
+      this.videos[this.editVideoIndex].audios.length > index
+    );
+  }
+
+  subtitleExistsInEdited(index: number): boolean {
+    return (
+      this.editMode &&
+      typeof this.editVideoIndex === 'number' &&
+      !!this.videos &&
+      !!this.videos[this.editVideoIndex] &&
+      Array.isArray(this.videos[this.editVideoIndex].subtitles) &&
+      this.videos[this.editVideoIndex].subtitles.length > index
+    );
   }
 
   ngOnDestroy() {
@@ -1128,75 +1427,54 @@ export class Videos implements OnInit {
     window.removeEventListener('click', this.windowClickHandler);
   }
 
-  // Editar: por ahora sólo editar el título (puedes reemplazar por un modal)
-  editVideoFromContext(): void {
-    if (this.contextMenuIndex == null) {
-      this.closeContextMenu();
-      return;
-    }
-    const idx = this.contextMenuIndex;
-    const video = this.videos[idx];
-    if (!video) {
-      this.closeContextMenu();
-      return;
-    }
-
-    const newTitle = prompt('Editar título del video:', video.title || '');
-    if (newTitle !== null) {
-      video.title = newTitle.trim();
-      // actualizar título en IndexedDB si existe
-      this.saveVideoMetadataToDB(video.id, { title: video.title }).catch(() => {});
-    }
-    this.closeContextMenu();
-  }
-
-  // Borrar video (libera objectURLs y remueve del arreglo)
+  // Borrar video desde menú contextual
   deleteVideoFromContext(): void {
     if (this.contextMenuIndex == null) {
       this.closeContextMenu();
       return;
     }
     const idx = this.contextMenuIndex;
-    const video = this.videos[idx];
-    if (!video) {
+    const item = this.videos[idx];
+    if (!item) {
       this.closeContextMenu();
       return;
     }
 
-    const confirmDel = confirm(`¿Eliminar "${video.title || 'Video ' + video.id}"?`);
-    if (!confirmDel) {
+    // Confirmación
+    const ok = confirm(`¿Eliminar "${item.title || 'este video'}"? Esta acción es irreversible.`);
+    if (!ok) {
       this.closeContextMenu();
       return;
     }
 
-    // pausar audio si estaba en reproducción
-    const audio = this.audioElements.get(video.id);
-    if (audio) {
-      audio.pause();
-      audio.currentTime = 0;
-    }
-
-    // liberar object URLs
+    // Remover recursos de memoria (object URLs)
     try {
-      URL.revokeObjectURL(video.src);
+      URL.revokeObjectURL(item.src);
     } catch {}
-    video.audios.forEach((url) => {
+    (item.audios || []).forEach((url) => {
       try {
         URL.revokeObjectURL(url);
       } catch {}
     });
-    video.subtitles.forEach((url) => {
+    (item.subtitles || []).forEach((url) => {
       try {
         URL.revokeObjectURL(url);
       } catch {}
     });
 
-    // eliminar del arreglo
+    // Detener y remover audio asociado si existe
+    const audio = this.audioElements.get(item.id);
+    if (audio) {
+      try {
+        audio.pause();
+      } catch {}
+      this.audioElements.delete(item.id);
+    }
+
+    // Remover del array y de IndexedDB
     this.videos.splice(idx, 1);
-
-    // eliminar de IndexedDB (si existe)
-    this.deleteVideoFromDB(video.id).catch(() => {
-      /* ignore */
+    this.deleteVideoFromDB(item.id).catch(() => {
+      // ignore DB errors
     });
 
     this.closeContextMenu();
