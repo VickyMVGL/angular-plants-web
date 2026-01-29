@@ -90,28 +90,50 @@ interface Foto {
 
           <div class="form-group">
             <label class="form-label required">Archivo JPG</label>
-            <input type="file" accept="image/jpeg" (change)="onFileChange($event)" />
+            <input type="file" accept="image/jpeg" (change)="onFileChange($event)" #fileInput />
           </div>
 
-          <image-cropper
-            *ngIf="imageChangedEvent || imageBase64"
-            [imageChangedEvent]="imageChangedEvent"
-            [imageBase64]="imageBase64"
-            [maintainAspectRatio]="false"
-            format="jpeg"
-            (imageCropped)="imageCropped($event)"
-          ></image-cropper>
+          <div *ngIf="showCropper" class="cropper-container">
+            <image-cropper
+              #cropper
+              [imageChangedEvent]="cropperEvent"
+              [imageBase64]="imageBase64"
+              [maintainAspectRatio]="false"
+              format="jpeg"
+              (imageCropped)="imageCropped($event)"
+            ></image-cropper>
 
-          <div class="summary-card" *ngIf="hasPreview()">
+            <div class="cropper-actions">
+              <button class="btn btn-primary" (click)="captureCrop()">Capturar Recorte</button>
+            </div>
+          </div>
+
+          <div class="preview-container" *ngIf="hasPreview()">
             <h4>Vista previa</h4>
-            <img [src]="previewImage()" />
+            <div class="image-comparison">
+              <div class="image-section">
+                <h5>Original</h5>
+                <img [src]="imageBase64" class="preview-image" />
+              </div>
+              <div class="image-section" *ngIf="croppedImage">
+                <h5>Recortada</h5>
+                <img [src]="croppedImage" class="preview-image" />
+                <button
+                  class="btn btn-success btn-sm"
+                  (click)="useCroppedImage()"
+                  style="margin-top: 10px;"
+                >
+                  Usar esta imagen
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
         <div class="modal-footer">
           <button class="btn btn-secondary" (click)="closeModal()">Cancelar</button>
           <button class="btn btn-primary" (click)="savePhoto()" [disabled]="!canSave()">
-            Guardar
+            {{ editingMode ? 'Actualizar Foto' : 'Guardar Foto' }}
           </button>
         </div>
       </div>
@@ -129,9 +151,10 @@ export class Fotos implements OnInit {
   showModal = false;
 
   tituloFoto = '';
-  imageChangedEvent: any = null;
+  cropperEvent: any = null;
   imageBase64 = '';
   croppedImage = '';
+  showCropper = false;
 
   // Exponer Math para usar en la plantilla
   public Math = Math;
@@ -187,73 +210,65 @@ export class Fotos implements OnInit {
   }
 
   onFileChange(event: Event): void {
-    this.imageChangedEvent = event;
-    this.imageBase64 = '';
-    this.croppedImage = '';
+    const input = event.target as HTMLInputElement;
+    const file = input?.files?.[0];
+
+    if (file) {
+      this.cropperEvent = event;
+      this.showCropper = true;
+
+      // Convertir a base64 para vista previa
+      const reader = new FileReader();
+      reader.onload = (e: ProgressEvent<FileReader>) => {
+        const result = e.target?.result;
+        if (result && typeof result === 'string') {
+          this.imageBase64 = result;
+        }
+      };
+      reader.readAsDataURL(file);
+    }
   }
 
   imageCropped(event: ImageCroppedEvent): void {
-    this.croppedImage = event.base64 || '';
+    // Este evento se dispara cuando el usuario termina de recortar
+    if (event.base64) {
+      this.croppedImage = event.base64;
+    }
+  }
+
+  captureCrop(): void {
+    // Forzar la captura del recorte actual
+    // Nota: En realidad, imageCropped ya se dispara automáticamente
+    // Este botón es solo para asegurarnos
+    console.log('Recorte capturado manualmente');
+  }
+
+  useCroppedImage(): void {
+    // Usar la imagen recortada como definitiva
+    this.imageBase64 = this.croppedImage;
   }
 
   hasPreview(): boolean {
-    return !!this.croppedImage || !!this.imageBase64;
-  }
-
-  previewImage(): string {
-    return this.croppedImage || this.imageBase64;
+    return !!this.imageBase64;
   }
 
   canSave(): boolean {
-    // Para guardar necesitamos:
-    // 1. Título no vacío
-    // 2. Y (imagen recortada O imagen base64 O un archivo seleccionado)
-    const hasImage = !!this.croppedImage || !!this.imageBase64 || !!this.imageChangedEvent;
-    return !!this.tituloFoto && hasImage;
+    return !!this.tituloFoto && !!this.imageBase64;
   }
 
   savePhoto(): void {
     if (!this.canSave()) return;
 
-    // Determinar qué imagen usar
-    let finalImage = '';
-
-    if (this.croppedImage) {
-      finalImage = this.croppedImage;
-    } else if (this.imageBase64) {
-      finalImage = this.imageBase64;
-    } else if (this.imageChangedEvent) {
-      // Si hay un archivo seleccionado pero no se ha recortado,
-      // convertirlo a base64 directamente
-      const input = this.imageChangedEvent.target as HTMLInputElement;
-      const file = input?.files?.[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = () => {
-          finalImage = reader.result as string;
-          this.saveFotoToArray(finalImage);
-        };
-        reader.readAsDataURL(file);
-        return; // Salir aquí porque la operación es asíncrona
-      }
-    }
-
-    this.saveFotoToArray(finalImage);
-  }
-
-  private saveFotoToArray(imageSrc: string): void {
-    if (!imageSrc) return;
-
     if (this.editingMode && this.editingId != null) {
       const idx = this.fotos.findIndex((f) => f.id === this.editingId);
       if (idx !== -1) {
-        this.fotos[idx] = { ...this.fotos[idx], titulo: this.tituloFoto, src: imageSrc };
+        this.fotos[idx] = { ...this.fotos[idx], titulo: this.tituloFoto, src: this.imageBase64 };
       }
     } else {
       this.fotos.push({
         id: this.idCounter++,
         titulo: this.tituloFoto,
-        src: imageSrc,
+        src: this.imageBase64,
       });
     }
 
@@ -263,9 +278,10 @@ export class Fotos implements OnInit {
 
   private resetForm(): void {
     this.tituloFoto = '';
-    this.imageChangedEvent = null;
+    this.cropperEvent = null;
     this.imageBase64 = '';
     this.croppedImage = '';
+    this.showCropper = false;
   }
 
   // Context menu handlers
@@ -296,8 +312,9 @@ export class Fotos implements OnInit {
     this.editingId = foto.id;
     this.tituloFoto = foto.titulo;
     this.imageBase64 = foto.src;
-    this.imageChangedEvent = null;
+    this.cropperEvent = null;
     this.croppedImage = '';
+    this.showCropper = true;
     this.openModalForEdit();
   }
 
