@@ -10,7 +10,6 @@ import { Router } from '@angular/router';
       <div class="progress-container">
         <div class="progress-bar" id="progressBar"></div>
       </div>
-      <div class="info">Transiciones automáticas cada 1.2 segundos</div>
     </div>
   `,
   styles: [
