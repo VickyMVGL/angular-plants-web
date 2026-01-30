@@ -21,87 +21,108 @@ import html2canvas from 'html2canvas';
   template: `
     <div class="container-fluid bg-light py-5">
       <div class="container">
-        <!-- Gestión de CVs Guardados -->
-        <div class="row mb-4">
-          <div class="col-md-12">
-            <div class="card">
-              <div
-                class="card-header bg-primary text-white d-flex justify-content-between align-items-center"
-              >
-                <h5 class="text-bg">Mis CVs Guardados</h5>
-                <div>
-                  <button
-                    class="btn btn-success btn-sm mr-2"
-                    (click)="saveCV()"
-                    [disabled]="!cvForm.valid"
-                  >
-                    Guardar CV Actual
-                  </button>
-                  <button class="btn btn-outline-light text-primary" (click)="newCV()">
-                    Nuevo CV
-                  </button>
-                </div>
-              </div>
-              <div class="card-body">
-                <!-- Input para nombre personalizado al guardar -->
-                <div *ngIf="showSaveInput" class="mb-3">
-                  <div class="row">
-                    <div class="col-md-8">
-                      <input
-                        type="text"
-                        class="form-control"
-                        placeholder="Nombre para este CV (ej: CV Ingeniero Software)"
-                        [(ngModel)]="newCvName"
-                        #cvNameInput
-                      />
-                    </div>
-                    <div class="col-md-4">
-                      <button class="btn btn-primary mr-2" (click)="confirmSave()">
-                        Confirmar
-                      </button>
-                      <button class="btn btn-secondary" (click)="cancelSave()">Cancelar</button>
-                    </div>
-                  </div>
-                </div>
+       <!-- Gestión de CVs Guardados -->
+<div class="row mb-4">
+  <div class="col-md-12">
+    <div class="card">
+      <div
+        class="card-header bg-primary text-white d-flex justify-content-between align-items-center"
+      >
+        <h5>Mis CVs Guardados</h5>
+        <div>
+          <button
+            class="btn btn-success btn-sm mr-2"
+            (click)="saveCV()"
+            [disabled]="!cvForm.valid"
+          >
+            Guardar CV Actual
+          </button>
+          <button class="btn btn-outline-light" (click)="newCV()">
+            Nuevo CV
+          </button>
+        </div>
+      </div>
 
-                <div *ngIf="cvList.length === 0" class="text-center text-muted py-3">
-                  <p>
-                    No hay CVs guardados. Completa el formulario y haz clic en "Guardar CV Actual".
-                  </p>
-                </div>
+      <div class="card-body">
 
-                <div class="list-group" *ngIf="cvList.length > 0">
-                  <div
-                    *ngFor="let cv of cvList"
-                    class="list-group-item d-flex justify-content-between align-items-center"
-                    [class.active]="currentCvId === cv.id"
-                  >
-                    <div class="flex-grow-1">
-                      <h6 class="mb-1">
-                        {{ cv.name }}
-                        <span *ngIf="currentCvId === cv.id" class="badge badge-primary ml-2"
-                          >Actual</span
-                        >
-                      </h6>
-                      <small class="text-bg">
-                        Creado: {{ formatDisplayDate(cv.createdAt) }} | Modificado:
-                        {{ formatDisplayDate(cv.lastModified) }}
-                      </small>
-                    </div>
-                    <div class="btn-group">
-                      <button class="btn btn-outline-primary btn-sm mr-1" (click)="loadCV(cv.id)">
-                        Cargar
-                      </button>
-                      <button class="btn btn-outline-danger btn-sm" (click)="deleteCV(cv.id)">
-                        Eliminar
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
+        <!-- Input nombre CV -->
+        <div *ngIf="showSaveInput" class="mb-3">
+          <div class="row">
+            <div class="col-md-8">
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Nombre para este CV"
+                [(ngModel)]="newCvName"
+              />
+            </div>
+            <div class="col-md-4">
+              <button class="btn btn-primary mr-2" (click)="confirmSave()">Confirmar</button>
+              <button class="btn btn-secondary" (click)="cancelSave()">Cancelar</button>
             </div>
           </div>
         </div>
+
+        <!-- Tabla DataTables -->
+        <table
+          id="cvTable"
+          class="table table-striped table-bordered"
+          width="100%"
+          *ngIf="cvList.length > 0"
+        >
+          <thead class="thead-dark">
+            <tr>
+              <th>Nombre</th>
+              <th>Fecha Creación</th>
+              <th>Última Modificación</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let cv of cvList">
+              <td>{{ cv.name }}</td>
+              <td>{{ formatDisplayDate(cv.createdAt) }}</td>
+              <td>{{ formatDisplayDate(cv.lastModified) }}</td>
+              <td>
+                <span
+                  class="badge"
+                  [ngClass]="{
+                    'badge-success': currentCvId === cv.id,
+                    'badge-secondary': currentCvId !== cv.id
+                  }"
+                >
+                  {{ currentCvId === cv.id ? 'Actual' : 'Guardado' }}
+                </span>
+              </td>
+              <td>
+                <button
+                  class="btn btn-outline-primary btn-sm mr-1"
+                  (click)="loadCV(cv.id)"
+                >
+                  Cargar
+                </button>
+                <button
+                  class="btn btn-outline-danger btn-sm"
+                  (click)="deleteCV(cv.id)"
+                >
+                  Eliminar
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div *ngIf="cvList.length === 0" class="text-center text-muted py-3">
+          No hay CVs guardados.
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
 
         <!-- Selector de diseño y color -->
         <div class="row mb-4">
