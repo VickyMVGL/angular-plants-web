@@ -21,108 +21,99 @@ import html2canvas from 'html2canvas';
   template: `
     <div class="container-fluid bg-light py-5">
       <div class="container">
-       <!-- Gestión de CVs Guardados -->
-<div class="row mb-4">
-  <div class="col-md-12">
-    <div class="card">
-      <div
-        class="card-header bg-primary text-white d-flex justify-content-between align-items-center"
-      >
-        <h5>Mis CVs Guardados</h5>
-        <div>
-          <button
-            class="btn btn-success btn-sm mr-2"
-            (click)="saveCV()"
-            [disabled]="!cvForm.valid"
-          >
-            Guardar CV Actual
-          </button>
-          <button class="btn btn-outline-light" (click)="newCV()">
-            Nuevo CV
-          </button>
-        </div>
-      </div>
+        <!-- Gestión de CVs Guardados -->
+        <div class="row mb-4">
+          <div class="col-md-12">
+            <div class="card">
+              <div
+                class="card-header bg-primary text-white d-flex justify-content-between align-items-center"
+              >
+                <h5>Mis CVs Guardados</h5>
+                <div>
+                  <button
+                    class="btn btn-success btn-sm mr-2"
+                    (click)="saveCV()"
+                    [disabled]="!cvForm.valid"
+                  >
+                    Guardar CV Actual
+                  </button>
+                  <button class="btn btn-outline-light" (click)="newCV()">Nuevo CV</button>
+                </div>
+              </div>
 
-      <div class="card-body">
+              <div class="card-body">
+                <!-- Input nombre CV -->
+                <div *ngIf="showSaveInput" class="mb-3">
+                  <div class="row">
+                    <div class="col-md-8">
+                      <input
+                        type="text"
+                        class="form-control"
+                        placeholder="Nombre para este CV"
+                        [(ngModel)]="newCvName"
+                      />
+                    </div>
+                    <div class="col-md-4">
+                      <button class="btn btn-primary mr-2" (click)="confirmSave()">
+                        Confirmar
+                      </button>
+                      <button class="btn btn-secondary" (click)="cancelSave()">Cancelar</button>
+                    </div>
+                  </div>
+                </div>
 
-        <!-- Input nombre CV -->
-        <div *ngIf="showSaveInput" class="mb-3">
-          <div class="row">
-            <div class="col-md-8">
-              <input
-                type="text"
-                class="form-control"
-                placeholder="Nombre para este CV"
-                [(ngModel)]="newCvName"
-              />
-            </div>
-            <div class="col-md-4">
-              <button class="btn btn-primary mr-2" (click)="confirmSave()">Confirmar</button>
-              <button class="btn btn-secondary" (click)="cancelSave()">Cancelar</button>
+                <!-- Tabla DataTables -->
+                <table
+                  id="cvTable"
+                  class="table table-striped table-bordered"
+                  width="100%"
+                  *ngIf="cvList.length > 0"
+                >
+                  <thead class="thead-dark">
+                    <tr>
+                      <th>Nombre</th>
+                      <th>Fecha Creación</th>
+                      <th>Última Modificación</th>
+                      <th>Estado</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    <tr *ngFor="let cv of cvList">
+                      <td>{{ cv.name }}</td>
+                      <td>{{ formatDisplayDate(cv.createdAt) }}</td>
+                      <td>{{ formatDisplayDate(cv.lastModified) }}</td>
+                      <td>
+                        <span
+                          class="badge"
+                          [ngClass]="{
+                            'badge-success': currentCvId === cv.id,
+                            'badge-secondary': currentCvId !== cv.id,
+                          }"
+                        >
+                          {{ currentCvId === cv.id ? 'Actual' : 'Guardado' }}
+                        </span>
+                      </td>
+                      <td>
+                        <button class="btn btn-outline-primary btn-sm mr-1" (click)="loadCV(cv.id)">
+                          Cargar
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm" (click)="deleteCV(cv.id)">
+                          Eliminar
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <div *ngIf="cvList.length === 0" class="text-center text-muted py-3">
+                  No hay CVs guardados.
+                </div>
+              </div>
             </div>
           </div>
         </div>
-
-        <!-- Tabla DataTables -->
-        <table
-          id="cvTable"
-          class="table table-striped table-bordered"
-          width="100%"
-          *ngIf="cvList.length > 0"
-        >
-          <thead class="thead-dark">
-            <tr>
-              <th>Nombre</th>
-              <th>Fecha Creación</th>
-              <th>Última Modificación</th>
-              <th>Estado</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            <tr *ngFor="let cv of cvList">
-              <td>{{ cv.name }}</td>
-              <td>{{ formatDisplayDate(cv.createdAt) }}</td>
-              <td>{{ formatDisplayDate(cv.lastModified) }}</td>
-              <td>
-                <span
-                  class="badge"
-                  [ngClass]="{
-                    'badge-success': currentCvId === cv.id,
-                    'badge-secondary': currentCvId !== cv.id
-                  }"
-                >
-                  {{ currentCvId === cv.id ? 'Actual' : 'Guardado' }}
-                </span>
-              </td>
-              <td>
-                <button
-                  class="btn btn-outline-primary btn-sm mr-1"
-                  (click)="loadCV(cv.id)"
-                >
-                  Cargar
-                </button>
-                <button
-                  class="btn btn-outline-danger btn-sm"
-                  (click)="deleteCV(cv.id)"
-                >
-                  Eliminar
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-        <div *ngIf="cvList.length === 0" class="text-center text-muted py-3">
-          No hay CVs guardados.
-        </div>
-
-      </div>
-    </div>
-  </div>
-</div>
-
 
         <!-- Selector de diseño y color -->
         <div class="row mb-4">
@@ -559,6 +550,12 @@ import html2canvas from 'html2canvas';
                           >
                             La fecha de inicio es obligatoria
                           </div>
+                          <div
+                            class="invalid-feedback"
+                            *ngIf="educationControls[i].get('startDate')?.errors?.['futureDate']"
+                          >
+                            La fecha de inicio no puede ser futura
+                          </div>
                         </div>
                         <div class="form-group">
                           <label>Fecha de Fin</label>
@@ -576,6 +573,12 @@ import html2canvas from 'html2canvas';
                             *ngIf="educationControls[i].get('endDate')?.errors?.['dateOrder']"
                           >
                             La fecha de fin no puede ser anterior a la fecha de inicio
+                          </div>
+                          <div
+                            class="invalid-feedback"
+                            *ngIf="educationControls[i].get('endDate')?.errors?.['futureDate']"
+                          >
+                            La fecha de fin no puede ser futura
                           </div>
                           <div class="form-check mt-2">
                             <input
@@ -749,6 +752,12 @@ import html2canvas from 'html2canvas';
                           >
                             La fecha de inicio es obligatoria
                           </div>
+                          <div
+                            class="invalid-feedback"
+                            *ngIf="experienceControls[i].get('startDate')?.errors?.['futureDate']"
+                          >
+                            La fecha de inicio no puede ser futura
+                          </div>
                         </div>
                         <div class="form-group">
                           <label>Fecha de Fin</label>
@@ -766,6 +775,12 @@ import html2canvas from 'html2canvas';
                             *ngIf="experienceControls[i].get('endDate')?.errors?.['dateOrder']"
                           >
                             La fecha de fin no puede ser anterior a la fecha de inicio
+                          </div>
+                          <div
+                            class="invalid-feedback"
+                            *ngIf="experienceControls[i].get('endDate')?.errors?.['futureDate']"
+                          >
+                            La fecha de fin no puede ser futura
                           </div>
                           <div class="form-check mt-2">
                             <input
@@ -1512,7 +1527,6 @@ import html2canvas from 'html2canvas';
   ],
 })
 export class CvComponent implements OnInit, OnDestroy {
-  // ... (el resto del código de la clase se mantiene exactamente igual)
   @ViewChild('cvPreview') cvPreview!: ElementRef;
   @ViewChild('cvNameInput') cvNameInput!: ElementRef;
 
@@ -1588,7 +1602,7 @@ export class CvComponent implements OnInit, OnDestroy {
       // Cargar automáticamente el último CV modificado
       if (this.cvList.length > 0) {
         const lastModified = this.cvList.sort(
-          (a, b) => new Date(b.lastModified).getTime() - new Date(a.lastModified).getTime()
+          (a, b) => new Date(b.lastModified).getTime() - new Date(a.lastModified).getTime(),
         )[0];
         this.loadCV(lastModified.id);
       }
@@ -1897,7 +1911,12 @@ export class CvComponent implements OnInit, OnDestroy {
     return inputDate > today ? { futureDate: true } : null;
   }
 
-  private dateOrderValidator(group: AbstractControl): ValidationErrors | null {
+  private dateOrderValidator(control: AbstractControl): ValidationErrors | null {
+    if (!control.value) return null;
+
+    const group = control.parent;
+    if (!group) return null;
+
     const startDate = group.get('startDate')?.value;
     const endDate = group.get('endDate')?.value;
     const current = group.get('current')?.value;
@@ -1918,9 +1937,12 @@ export class CvComponent implements OnInit, OnDestroy {
     if (current) {
       educationGroup.get('endDate')?.disable();
       educationGroup.get('endDate')?.clearValidators();
+      educationGroup.get('endDate')?.setErrors(null);
     } else {
       educationGroup.get('endDate')?.enable();
-      educationGroup.get('endDate')?.setValidators(this.dateOrderValidator);
+      educationGroup
+        .get('endDate')
+        ?.setValidators([this.futureDateValidator, this.dateOrderValidator]);
     }
     educationGroup.get('endDate')?.updateValueAndValidity();
   }
@@ -1932,43 +1954,40 @@ export class CvComponent implements OnInit, OnDestroy {
     if (current) {
       experienceGroup.get('endDate')?.disable();
       experienceGroup.get('endDate')?.clearValidators();
+      experienceGroup.get('endDate')?.setErrors(null);
     } else {
       experienceGroup.get('endDate')?.enable();
-      experienceGroup.get('endDate')?.setValidators(this.dateOrderValidator);
+      experienceGroup
+        .get('endDate')
+        ?.setValidators([this.futureDateValidator, this.dateOrderValidator]);
     }
     experienceGroup.get('endDate')?.updateValueAndValidity();
   }
 
   // Creación de grupos del formulario
   private createEducationGroup(): FormGroup {
-    const group = this.fb.group(
-      {
-        school: ['', Validators.required],
-        city: ['', [Validators.required, this.onlyLettersAndSpacesValidator]],
-        startDate: ['', Validators.required],
-        endDate: [''],
-        current: [false],
-        description: [''],
-      },
-      { validators: this.dateOrderValidator }
-    );
+    const group = this.fb.group({
+      school: ['', Validators.required],
+      city: ['', [Validators.required, this.onlyLettersAndSpacesValidator]],
+      startDate: ['', [Validators.required, this.futureDateValidator]],
+      endDate: ['', [this.futureDateValidator, this.dateOrderValidator]],
+      current: [false],
+      description: [''],
+    });
 
     return group;
   }
 
   private createExperienceGroup(): FormGroup {
-    const group = this.fb.group(
-      {
-        position: ['', Validators.required],
-        employer: ['', Validators.required],
-        city: ['', [Validators.required, this.onlyLettersAndSpacesValidator]],
-        startDate: ['', Validators.required],
-        endDate: [''],
-        current: [false],
-        description: [''],
-      },
-      { validators: this.dateOrderValidator }
-    );
+    const group = this.fb.group({
+      position: ['', Validators.required],
+      employer: ['', Validators.required],
+      city: ['', [Validators.required, this.onlyLettersAndSpacesValidator]],
+      startDate: ['', [Validators.required, this.futureDateValidator]],
+      endDate: ['', [this.futureDateValidator, this.dateOrderValidator]],
+      current: [false],
+      description: [''],
+    });
 
     return group;
   }
