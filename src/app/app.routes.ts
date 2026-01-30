@@ -3,6 +3,15 @@ import { Routes } from '@angular/router';
 export const routes: Routes = [
   {
     path: '',
+    redirectTo: 'loader',
+    pathMatch: 'full',
+  },
+  {
+    path: 'loader',
+    loadComponent: () => import('./components/loader/loader').then((m) => m.LoaderComponent),
+  },
+  {
+    path: 'home',
     loadComponent: () => import('./pages/home/home').then((m) => m.Home),
   },
   {
@@ -13,7 +22,6 @@ export const routes: Routes = [
     path: 'services',
     loadComponent: () => import('./pages/services/services').then((m) => m.ServicesPage),
   },
-
   {
     path: 'price',
     loadComponent: () => import('./pages/price/price').then((m) => m.PricePage),
@@ -22,7 +30,6 @@ export const routes: Routes = [
     path: 'booking',
     loadComponent: () => import('./pages/booking/booking').then((m) => m.BookingPage),
   },
-
   {
     path: 'config',
     loadComponent: () => import('./pages/config/config').then((m) => m.ConfigPage),
@@ -30,5 +37,9 @@ export const routes: Routes = [
   {
     path: 'cv',
     loadComponent: () => import('./pages/cv/cv').then((m) => m.CvComponent),
+  },
+  {
+    path: '**',
+    redirectTo: 'home',
   },
 ];
