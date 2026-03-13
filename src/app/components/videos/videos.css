@@ -2,14 +2,14 @@
   padding: 20px;
   max-width: 1200px;
   margin: 0 auto;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: var(--text-font);
 }
 
 .section-title {
   text-align: center;
   color: #2c3e50;
   margin-bottom: 30px;
-  font-size: 28px;
+  font-size: var(--title-size);
   font-weight: 700;
 }
 
@@ -32,7 +32,7 @@
   border: none;
   border-radius: 25px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: var(--text-size);
   font-weight: 600;
   transition: all 0.3s;
   min-width: 100px;
@@ -53,7 +53,7 @@
 .carousel-counter {
   font-weight: bold;
   color: #2c3e50;
-  font-size: 16px;
+  font-size: var(--text-size);
   background: white;
   padding: 8px 15px;
   border-radius: 20px;
@@ -96,7 +96,7 @@
 
 .video-header h3 {
   margin: 0;
-  font-size: 18px;
+  font-size: var(--text-size);
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
@@ -200,7 +200,7 @@ video {
   text-align: center;
   padding: 60px 20px;
   color: #666;
-  font-size: 16px;
+  font-size: var(--text-size);
   background: #f8f9fa;
   border-radius: 10px;
   border: 2px dashed #ddd;
@@ -224,7 +224,7 @@ video {
   color: white;
   border: none;
   border-radius: 50px;
-  font-size: 16px;
+  font-size: var(--text-size);
   font-weight: bold;
   cursor: pointer;
   display: inline-flex;
@@ -244,7 +244,7 @@ video {
 }
 
 .add-btn span {
-  font-size: 24px;
+  font-size: var(--text-size);
 }
 
 /* Modal */
@@ -306,13 +306,13 @@ video {
 
 .modal-header h3 {
   margin: 0;
-  font-size: 24px;
+  font-size: var(--text-size);
   font-weight: 700;
 }
 
 .modal-subtitle {
   margin: 0;
-  font-size: 14px;
+  font-size: var(--text-size);
   opacity: 0.9;
 }
 
@@ -325,7 +325,7 @@ video {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  font-size: 24px;
+  font-size: var(--text-size);
   cursor: pointer;
   color: white;
   display: flex;
@@ -353,7 +353,7 @@ video {
   margin-bottom: 10px;
   font-weight: 600;
   color: #2c3e50;
-  font-size: 15px;
+  font-size: var(--text-size);
 }
 
 .form-label.required::after {
@@ -364,7 +364,7 @@ video {
 .form-help {
   margin: 5px 0 10px 0;
   color: #666;
-  font-size: 13px;
+  font-size: var(--text-size);
   font-style: italic;
 }
 
@@ -409,13 +409,13 @@ video {
 }
 
 .upload-icon {
-  font-size: 48px;
+  font-size: var(--text-size);
   margin-bottom: 15px;
   display: block;
 }
 
 .file-types {
-  font-size: 12px;
+  font-size: var(--text-size);
   color: #999;
   margin-top: 5px;
 }
@@ -437,7 +437,7 @@ video {
 }
 
 .file-icon {
-  font-size: 24px;
+  font-size: var(--text-size);
 }
 
 .file-meta {
@@ -448,12 +448,12 @@ video {
 
 .file-meta strong {
   color: #2c3e50;
-  font-size: 14px;
+  font-size: var(--text-size);
 }
 
 .file-meta span {
   color: #666;
-  font-size: 12px;
+  font-size: var(--text-size);
 }
 
 .remove-btn {
@@ -462,7 +462,7 @@ video {
   border: none;
   padding: 8px 15px;
   border-radius: 6px;
-  font-size: 13px;
+  font-size: var(--text-size);
   cursor: pointer;
   transition: background 0.3s;
 }
@@ -476,7 +476,7 @@ video {
   padding: 12px 15px;
   border: 2px solid #e0e0e0;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: var(--text-size);
   transition: border-color 0.3s;
 }
 
@@ -488,7 +488,7 @@ video {
 
 .char-counter {
   text-align: right;
-  font-size: 12px;
+  font-size: var(--text-size);
   color: #666;
   margin-top: 5px;
 }
@@ -504,7 +504,7 @@ video {
   padding: 0 20px;
   color: #667eea;
   font-weight: 600;
-  font-size: 14px;
+  font-size: var(--text-size);
   text-transform: uppercase;
   letter-spacing: 1px;
 }
@@ -531,7 +531,7 @@ video {
 .summary-card h4 {
   margin: 0 0 15px 0;
   color: #2c3e50;
-  font-size: 18px;
+  font-size: var(--text-size);
 }
 
 .summary-item {
@@ -552,12 +552,12 @@ video {
 
 .summary-item strong {
   color: #2c3e50;
-  font-size: 16px;
+  font-size: var(--text-size);
 }
 
 .error-message {
   color: #e74c3c;
-  font-size: 13px;
+  font-size: var(--text-size);
   margin-top: 8px;
   font-weight: 500;
 }
@@ -576,7 +576,7 @@ video {
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  font-size: 15px;
+  font-size: var(--text-size);
   font-weight: 600;
   transition: all 0.3s;
   min-width: 120px;
@@ -648,7 +648,7 @@ video {
   text-align: left;
   padding: 8px 12px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: var(--text-size);
   color: #222;
 }
 
